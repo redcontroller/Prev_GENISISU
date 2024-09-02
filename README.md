@@ -39,7 +39,14 @@
 | <img height="25" src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white"/> | <img height="25" src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=Python&logoColor=white">                |
 | <img height="25" src="https://img.shields.io/badge/Zustand-000000?style=for-the-badge&logo=Zustand&logoColor=white">                  |
 
-</div>
+| 분야          |                                                                                                                        SKILL                                                                                                                         |
+| ------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| Frontend      | <img height="25" src="https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white"/> <img height="25" src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white"/> |
+| Backend       |                                                                                                                                                                                                                                                      |
+| Config        |                                                                                                                                                                                                                                                      |
+| Environment   |                                                                                                                                                                                                                                                      |
+| Communication |                                                                                                                                                                                                                                                      |
+
 </br>
 
 ## 4. 프로젝트 설명
@@ -204,7 +211,7 @@ QnA 게시판 상세 및 댓글, 게시판, 게시글 작성,
 <summary>추가기능 계획</summary>
 <div markdown="1">
 
-1. 일정 계획
+1.  일정 계획
     - 담당: 김모건, 류재준
     - 일정: 9/2 (월)
     - 내용: 신규 Repo 생성, dev 브랜치 생성 및 default 설정

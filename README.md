@@ -31,21 +31,13 @@
 
 ### Development
 
-| Frontend                                                                                                                              | Backend                                                                                                                           | Config                                                                                                             | Environment                                                                                                                | Communication                                                                                                              |
-| ------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| <img height="25" src="https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white"/>                     | <img height="25" src="https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&logo=Node.js&logoColor=white">              | <img height="25" src="https://img.shields.io/badge/NPM-CB3837.svg?style=for-the-badge&logo=npm&logoColor=white" /> | <img height="25" src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" />    | <img height="25" src="https://img.shields.io/badge/Notion-000000.svg?style=for-the-badge&logo=notion&logoColor=white" />   |
-| <img height="25" src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white"/>    | <img height="25" src="https://img.shields.io/badge/express.js-000000.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB" /> |                                                                                                                    | <img height="25" src="https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white"/> | <img height="25" src="https://img.shields.io/badge/figma-F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white" />     |
-| <img height="25" src="https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white">                 | <img height="25" src="https://img.shields.io/badge/mongodb-47A248.svg?style=for-the-badge&logo=mongodb&logoColor=white"/>         |                                                                                                                    |                                                                                                                            | <img height="25" src="https://img.shields.io/badge/Discord-5865F2.svg?style=for-the-badge&logo=Discord&logoColor=white" /> |
-| <img height="25" src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white"/> | <img height="25" src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=Python&logoColor=white">                |
-| <img height="25" src="https://img.shields.io/badge/Zustand-000000?style=for-the-badge&logo=Zustand&logoColor=white">                  |
-
-| 분야          |                                                                                                                        SKILL                                                                                                                         |
-| ------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| Frontend      | <img height="25" src="https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white"/> <img height="25" src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white"/> |
-| Backend       |                                                                                                                                                                                                                                                      |
-| Config        |                                                                                                                                                                                                                                                      |
-| Environment   |                                                                                                                                                                                                                                                      |
-| Communication |                                                                                                                                                                                                                                                      |
+| Field         | SKILL                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend      | <img height="25" src="https://img.shields.io/badge/Next-black?style=for-the-badge&logo=next.js&logoColor=white"/> <img height="25" src="https://img.shields.io/badge/typescript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white"/> <img height="25" src="https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white"> <img height="25" src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white"/> <img height="25" src="https://img.shields.io/badge/Zustand-000000?style=for-the-badge&logo=Zustand&logoColor=white"> |
+| Backend       | <img height="25" src="https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&logo=Node.js&logoColor=white"> <img height="25" src="https://img.shields.io/badge/express.js-000000.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB" /> <img height="25" src="https://img.shields.io/badge/mongodb-47A248.svg?style=for-the-badge&logo=mongodb&logoColor=white"/> <img height="25" src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=Python&logoColor=white"/>                                                                                                                                  |
+| Config        | <img height="25" src="https://img.shields.io/badge/NPM-CB3837.svg?style=for-the-badge&logo=npm&logoColor=white" />                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Environment   | <img height="25" src="https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white" /> <img height="25" src="https://img.shields.io/badge/vercel-%23000000.svg?style=for-the-badge&logo=vercel&logoColor=white"/>                                                                                                                                                                                                                                                                                                                                                                                    |
+| Communication | <img height="25" src="https://img.shields.io/badge/Notion-000000.svg?style=for-the-badge&logo=notion&logoColor=white" /> <img height="25" src="https://img.shields.io/badge/figma-F24E1E.svg?style=for-the-badge&logo=figma&logoColor=white" /> <img height="25" src="https://img.shields.io/badge/Discord-5865F2.svg?style=for-the-badge&logo=Discord&logoColor=white" />                                                                                                                                                                                                                                                            |
 
 </br>
 
@@ -210,16 +202,8 @@ QnA 게시판 상세 및 댓글, 게시판, 게시글 작성,
 <details align="left">
 <summary>추가기능 계획</summary>
 <div markdown="1">
+
 1. 일정 계획
-<<<<<<< Updated upstream
-  - 담당: 김모건, 류재준
-  - 일정: 9/2 (월)
-  - 내용: 신규 Repo 생성, dev 브랜치 생성 및 default 설정
-2. 주문 기능 개발
-  - 담당: 김모건
-  - 일정: 9/3 ~ 9/7 (기능2, 스타일1, 에러1)
-  - 내용: 외장, 선택 옵션 개발
-=======
    - 담당: 김모건, 류재준
    - 일정: 9/2 (월)
    - 내용: 신규 Repo 생성, dev 브랜치 생성 및 default 설정
@@ -227,44 +211,30 @@ QnA 게시판 상세 및 댓글, 게시판, 게시글 작성,
    - 담당: 김모건
    - 일정: 9/3 ~ 9/7 (기능2, 스타일1, 에러1)
    - 내용: 외장, 선택 옵션 개발
->>>>>>> Stashed changes
 3. 결제 기능 개발
- - 담당: 류재준
- - 일정: 9/3 ~ 9/7 (기능4, 에러1)
- - 내용: 세금(캐스퍼 참고), 배송(카카오 API), 사용자 옵션 적용, 약관동의(시간되면)
- - 레이아웃 변동 없음
+
+- 담당: 류재준
+- 일정: 9/3 ~ 9/7 (기능4, 에러1)
+- 내용: 세금(캐스퍼 참고), 배송(카카오 API), 사용자 옵션 적용, 약관동의(시간되면)
+- 레이아웃 변동 없음
+
 4. 전시시승 게시판 개발
-<<<<<<< Updated upstream
- - 담당: 류재준
- - 일정: 9/9 ~ 9/11 (기능2, 에러1)
- - 내용: 페이지네이션 기능을 가진 Fetch 함수 구현, 게시글 검색 기능 추가,         권한별로 상세 이동 못하도록 막기 (관리자 아니면 alert 띄우기)
-=======
-   - 담당: 류재준
-   - 일정: 9/9 ~ 9/11 (기능2, 에러1)
-   - 내용: 페이지네이션 기능을 가진 Fetch 함수 구현, 게시글 검색 기능 추가, 권한별로 상세 이동 못하도록 막기 (관리자 아니면 alert 띄우기)
->>>>>>> Stashed changes
+   <<<<<<< Updated upstream
+
+- 담당: 류재준
+- 일정: 9/9 ~ 9/11 (기능2, 에러1)
+- # 내용: 페이지네이션 기능을 가진 Fetch 함수 구현, 게시글 검색 기능 추가, 권한별로 상세 이동 못하도록 막기 (관리자 아니면 alert 띄우기)
+  - 담당: 류재준
+  - 일정: 9/9 ~ 9/11 (기능2, 에러1)
+  - 내용: 페이지네이션 기능을 가진 Fetch 함수 구현, 게시글 검색 기능 추가, 권한별로 상세 이동 못하도록 막기 (관리자 아니면 alert 띄우기)
+
 5. 전시시승 게시글 작성 기능 개발
- - 담당: 김모건
- - 일정: 9/9 ~ 9/10 (기능1, 에러1)
- - 내용: 게스트 작성 Fetch 함수 추가 (게스트가 디폴트, 권한 있는 사람은 기존 Fetch 함수 사용)
+
+- 담당: 김모건
+- 일정: 9/9 ~ 9/10 (기능1, 에러1)
+- 내용: 게스트 작성 Fetch 함수 추가 (게스트가 디폴트, 권한 있는 사람은 기존 Fetch 함수 사용)
+
 6. 전시시승 게시글 상세, 댓글 기능 개발
-<<<<<<< Updated upstream
- - 담당: 김모건
- - 일정: 9/11 ~ 9/13  (기능1, 에러1, 스타일1)
- - 내용:  권한 보고 게시글과 댓글 삭제 버튼 숨기기, 댓글 이미지 오류 해결,          게시글 상세 레이아웃 수정
-7. PC 반응형 ( ~max-width 1300px) 
- - 담당: 류재준
- - 일정: 9/12, 13 (스타일 1, 에러1)
- - 내용: 전체 페이지 반응형
-8. 모바일 반응형
- - 담당: 류재준
- - 일정: 9/14,  19 ~ 22(스타일 4, 에러1) 
- - 내용: 전체 페이지 반응형
-9. 로그인
- - 담당: 김모건
- - 일정: 19, 21, 22 (기능2, 에러1) 
- - 내용: 로그인 기능, Google/GitHub/현대멤버스 로그인 기능, 헤더 수정
-=======
    - 담당: 김모건
    - 일정: 9/11 ~ 9/13 (기능1, 에러1, 스타일1)
    - 내용: 권한 보고 게시글과 댓글 삭제 버튼 숨기기, 댓글 이미지 오류 해결, 게시글 상세 레이아웃 수정
@@ -280,14 +250,16 @@ QnA 게시판 상세 및 댓글, 게시판, 게시글 작성,
    - 담당: 김모건
    - 일정: 19, 21, 22 (기능2, 에러1)
    - 내용: 로그인 기능, Google/GitHub/현대멤버스 로그인 기능, 헤더 수정
->>>>>>> Stashed changes
 10. 회원가입
- - 담당: 류재준
- - 일정: 23 ~ 24 (기능1, 에러1)
- - 내용: 회원가입 기능
+
+- 담당: 류재준
+- 일정: 23 ~ 24 (기능1, 에러1)
+- 내용: 회원가입 기능
+
 11. 로그인 회원가입 스타일 통합
- - 담당: 류재준
- - 일정: 25 ~ 27 (스타일 3)
- - 내용: 로그인 회원가입 통합 인터랙션 UI, 반응형 적용
+
+- 담당: 류재준
+- 일정: 25 ~ 27 (스타일 3)
+- 내용: 로그인 회원가입 통합 인터랙션 UI, 반응형 적용
 </div>
 </details>

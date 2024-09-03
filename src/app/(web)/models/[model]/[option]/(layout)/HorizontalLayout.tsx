@@ -1,12 +1,11 @@
 'use client'
 
-import Button from '@/components/Button';
 import useLocalStorage from '@/hook/useLocalStorage';
 import { Cart, Option, Product } from '@/types/product';
 import { useModelStore } from '@/zustand/useModel';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ReactNode, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 
 interface HorizontalLayoutProps {
   params: {
@@ -40,14 +39,16 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
   const defaultGroupName = defaultData.topText;
   const defaultItemName = defaultItems[0].name;
   const defaultItemImage = defaultItems[0].image ? SERVER + defaultItems[0].image.path : '';
+  const defaultItemDescription = defaultItems[0].description || '';
 
   const clickedOptionRef = useRef<Set<string>>(new Set([defaultGroupName, defaultGroupName + defaultItemName]));
-  const textOptionRef = useRef<Map<string, string>>(
-    new Map([
-      ['group', defaultGroupName],
-      ['item', defaultItemName],
-    ])
-  );
+  const checkOptionRef = useRef<Set<string>>(new Set());
+  // const textOptionRef = useRef<Map<string, string>>(
+  //   new Map([
+  //     ['group', defaultGroupName],
+  //     ['item', defaultItemName],
+  //   ])
+  // );
 
   const [optionState, setOptionState] = useState<{
     node: ReactNode;
@@ -60,35 +61,105 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
     prevPrice: storedValue.price,
     newPrice: storedValue.price,
     imageSource: defaultItemImage,
-    optionText: defaultItemName,
+    optionText: defaultItemDescription,
   });
 
   const handleOptionClick = (
     optionGroup: string,
     optionItem: string,
-    optionPrice: number,
-    optionImage: string
+    optionImage: string,
+    optionText: string,
   ) => {
     clickedOptionRef.current.clear();
     clickedOptionRef.current.add(optionGroup);
     clickedOptionRef.current.add(optionGroup + optionItem);
     const newImage = optionImage;
-    // 로컬스토리지 기준값: storedValue.price
-    const newPrice = optionPrice === 0 ? storedValue.price : storedValue.price + optionPrice;
-    textOptionRef.current.set('group', optionGroup);
-    textOptionRef.current.set('item', optionItem);
 
-    // setOptionState({
-    //   node: list,
-    //   prevPrice: optionState.newPrice,
-    //   newPrice: newPrice,
-    //   imageSource: newImage,
-    //   optionText: textOptionRef.current.get('item') || '',
-    // });
+    setOptionState((preState) => ({
+      ...preState,
+      node: list,
+      imageSource: newImage,
+      optionText: optionText
+    }));
   };
 
-  const isClicked = (item: string) => clickedOptionRef.current.has(item) ? 'border-[3px] border-slate-300' : '';
+  const handleOptionCheck = (
+    optionGroup: string,
+    // optionItem: string,
+    optionPrice: number,
+    // optionImage: string
+  ) => {
+    let newPrice = 0;
+    if (checkOptionRef.current.has(optionGroup)) {
+      checkOptionRef.current.delete(optionGroup);
+      newPrice = optionPrice === 0 ? storedValue.price : storedValue.price - optionPrice;
+    } else {
+      checkOptionRef.current.add(optionGroup);
+      newPrice = optionPrice === 0 ? storedValue.price : storedValue.price + optionPrice;
+    }
+    setOptionState((preState) => ({
+      ...preState,
+      node: list,
+      prevPrice: preState.newPrice,
+      newPrice: newPrice,
+      // imageSource: newImage,
+      // optionText: textOptionRef.current.get('item') || '',
+    }));
+  };
 
+  const isOptionActive = (option: string) =>
+  clickedOptionRef.current.has(option) ? 'text-white' : 'text-[#666666]';
+
+  const list = modelOptionData.map((optionGroup, i) => {
+    const groupName = optionGroup.topText;
+    const price = optionGroup.price;
+    const groupItems = optionGroup.items || [];
+    // const lastIndex = groupItems.length - 1;
+    const groupImage = groupItems[0]?.image?.path ? SERVER + groupItems[0].image.path : defaultItemImage;
+    const firstItem = groupItems[0]?.name;
+    const firstItemText = groupItems[0].description || '';
+    const checkIcon = checkOptionRef.current.has(groupName) ? '/images/check_activate.svg' : '/images/check_deactivate.svg';
+    const textItems = groupItems.length > 1 ? groupItems : [];
+    return (
+      <tr 
+        key={groupName + i}
+        className={`flex flex-col items-left text-[18px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]`}
+      >
+        <td 
+          onClick={() => handleOptionClick(groupName, firstItem, groupImage, firstItemText)}
+          className={`font-Hyundai-sans flex gap-x-3 items-center font-bold ${isOptionActive(groupName)} `}
+        >
+          <figure 
+            onClick={() => handleOptionCheck(groupName, price)}
+            className='w-[30px] h-[30px] relative hover:cursor-pointer'>
+            <Image src={checkIcon} fill sizes='100%' alt='check icon' />
+          </figure>
+          <span className='hover:cursor-pointer'>{groupName}</span>
+        </td>
+        <td className="font-Hyundai-sans text-[16px] text-[#666666] px-11">
+          + {price.toLocaleString('ko-KR')} 원
+        </td>
+        <td className={`font-Hyundai-sans mt-2`}>
+          <ul className='list-disc px-[60px] text-[16px]'>
+            {textItems.map((item, j) => {
+              const itemImage = item.image?.path ? SERVER + item.image.path : '';
+              const itemName = item.name;
+              const itemText = item.description || '';
+              return (
+                <li 
+                  key={item.name + j}
+                  onClick={() => handleOptionClick(groupName, itemName, itemImage, itemText)}
+                  className={`${isOptionActive(groupName + itemName)} hover:cursor-pointer`}
+                >
+                  {item.name}
+                </li>
+              );
+            })}
+          </ul>
+        </td>
+      </tr>
+    );
+  });
 
   const { steps } = useModelStore();
   const currentStep = steps.indexOf(optionName);
@@ -99,88 +170,52 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
     e.preventDefault();
     const step = direction === 'prev' ? prevStep : nextStep;
     router.push(`/models/${params.model}/${step}`);
-    // setValue({
-    //   model: modelName,
-    //   price: optionState.newPrice,
-    // });
+    setValue({
+      model: modelName,
+      price: optionState.newPrice,
+    });
   };
+
+  useEffect(() => {
+    setOptionState((prevState) => ({
+      ...prevState,
+      node: list,
+    }));
+  }, []);
+
+  const text = optionState.optionText;
+  const regex = /※.*/g;
+  const matches = text.match(regex);
+  const annotation = matches && matches.join('\n'); // 주석
+  const mainText = annotation && text.replace(annotation, ''); // 본문
 
   return (
     <>
       <section className="h-screen relative">
-        <article className="flex absolute items-center w-[1440px] right-[50px] top-[200px]">
+        <article className="flex absolute justify-center items-top w-[1440px] right-[50px] top-[200px]">
+
           <div className="flex flex-col mr-[40px]">
             <figure className="w-[650px] h-[325px] relative">
-              <Image src={defaultItemImage} fill sizes='100%' className="w-full" alt="" />
+              <Image src={optionState.imageSource} fill sizes='100%' className="w-full" alt="" />
             </figure>
-            <h4 className="mb-[20px] self-center mt-[20px]">
-              상기 이미지는 차량의 대표 이미지로 적용되어 있습니다.
+            <h4 className="w-[650px] mb-[20px] self-center mt-[20px] text-[16px]">
+              <pre className='font-Hyundai-sans whitespace-pre-wrap'>
+                {mainText}
+              </pre>
+              <pre className='font-Hyundai-sans whitespace-pre-wrap text-[#666666]'>
+                {annotation}
+              </pre>
             </h4>
           </div>
 
-          <article className="w-[1200px] h-[400px] overflow-scroll border-t-[1px] border-b-[1px]  border-[#a4a4a4]">
+          <article className="w-[600px] h-[670px] overflow-scroll border-t-[1px] border-b-[1px]  border-[#a4a4a4]">
             <table className="w-full">
               <tbody>
-                <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]">
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션명)
-                  </td>
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션1)
-                  </td>
-                </tr>
-                <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]">
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션명)
-                  </td>
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션2)
-                  </td>
-                </tr>
-                <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]">
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션명)
-                  </td>
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션3)
-                  </td>
-                </tr>
-                <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]">
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션명)
-                  </td>
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션4)
-                  </td>
-                </tr>
-                <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]">
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션명)
-                  </td>
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션5)
-                  </td>
-                </tr>
-                <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]">
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션명)
-                  </td>
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션6)
-                  </td>
-                </tr>
-                {/* 가장 마지막 요소의 class에 border-b-[1px] 클래스를 넣어주세요 */}
-                <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]">
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션명)
-                  </td>
-                  <td className="font-Hyundai-sans" data-value="">
-                    (옵션7)
-                  </td>
-                </tr>
+                {list}
               </tbody>
             </table>
           </article>
+
         </article>
 
         <div className="grid grid-cols-[60px_60px] grid-rows-[50px] gap-x-[20px] absolute top-[620px] left-[80px]">
@@ -198,22 +233,12 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
         
         <article className="w-full absolute bottom-[120px] flex items-end z-10 justify-center ">
 
-          {/* <div className="flex gap-x-[20px]">
-            <Button size="custom" onClick={(e) => clickButton(e, 'prev')}>
-              이전
-            </Button>
-            <Button color="black" bgColor="white" size="custom" onClick={clickButton}>
-              다음
-            </Button>
-          </div> */}
-         
-
           <div className="absolute right-12">
             <aside className="font-Hyundai-sans border-[1px] border-[#666666] flex flex-col justify-center px-[30px] pt-[10px]">
               <p className="text-[15px] text-[#a4a4a4]">예상가격</p>
               <span className="text-[30px] font-bold mt-[-10px]">
                 {optionState.newPrice.toLocaleString('ko-KR')}
-                <span className="text-[20px]">원</span>
+                <span className="text-[20px] align-middle"> 원</span>
               </span>
             </aside>
           </div>

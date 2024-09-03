@@ -5,7 +5,7 @@ import { ModelOption, OptionExterior } from "@/types/product";
 import PortOne from "@portone/browser-sdk/v2";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface PaymentsActionProps {
   vehicleInfo : {name:string, image:string}[],
@@ -14,7 +14,6 @@ interface PaymentsActionProps {
 }
 
 export default function PaymentsAction (
-
   {vehicleInfo, optionData, exteriorData}: PaymentsActionProps) {
 
   const [storedValue, setValue] = useLocalStorage('cart', {
@@ -29,17 +28,6 @@ export default function PaymentsAction (
     wheel:'',
     add:'',
   })
-
-  const route = useRouter();
-  const tbodyRef = useRef<HTMLTableSectionElement>(null)
-  const tbodyLengthRef = useRef(0)
-
-  useEffect(()=>{
-    if (tbodyRef.current) {
-      tbodyLengthRef.current = tbodyRef.current.querySelectorAll('tr').length -1;
-    }
-  },[])
-
 
   const optionExterior = exteriorData.extra.option.exterior.glossy.colors[`${storedValue.model}`]
   const optionEngine = optionData[0].engine[`${storedValue.model}`]
@@ -57,6 +45,67 @@ export default function PaymentsAction (
   const CHANNELKEY : string = process.env.NEXT_PUBLIC_API_SERVER;
   const imageMatch = vehicleInfo.filter(item => item.name === storedValue.model)[0]
 
+  const route = useRouter();
+  const tbodyRef = useRef<HTMLTableSectionElement>(null)
+  const tbodyLengthRef = useRef(0)
+  const texRef = useRef<HTMLTableSectionElement>(null)
+  const sumRef = useRef(null)
+
+  const [selValue, setSelValue] = useState("normal");
+  const [tax01Value, setTax01Value] = useState(1000000)
+  const [tax02Value, setTax02Value] = useState(0)
+  const [tax03Value, setTax03Value] = useState(0)
+  const [isAble,setIsAble] = useState(false)
+
+  // 전체 옵션갯수 반영
+  useEffect(()=>{
+    if (tbodyRef.current) {
+      tbodyLengthRef.current = tbodyRef.current.querySelectorAll('tr').length -1;
+    }
+  },[])
+
+// 세금 반영
+  const taxOptions = {
+    tax04:3000,
+    tax05:18000,
+    tax06:50000,
+    insuranceTax:1900,
+  }
+
+  useEffect(()=>{
+    if (texRef.current) {
+      switch (selValue) {
+        case "normal":
+          setTax01Value(1000000)
+          setTax02Value(price * 0.07)
+          setTax03Value(price * 0.025)
+          setIsAble(false)
+          break;
+        case "disabled":
+          setTax01Value(0)
+          setTax02Value(0)
+          setTax03Value(0)
+          setIsAble(true)
+          break;
+        default:
+          setTax01Value(1000000)
+          setTax02Value(price * 0.07)
+          setTax03Value(price * 0.025)
+          setIsAble(false)
+          break;
+      }
+    }
+  },[selValue])
+  const handleValueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelValue(e.currentTarget.value)
+  }
+
+  let taxSum = - tax01Value + tax02Value + tax03Value + taxOptions.tax04 + taxOptions.tax05 + taxOptions.tax06
+
+ 
+
+
+
   // 결제이벤트 연결
   const payClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -68,7 +117,7 @@ export default function PaymentsAction (
       paymentId: `payment-${crypto.randomUUID()}`,
       // --- 여기까지 건드리면 안됌
       orderName: `${title}`,
-      totalAmount: Number(`${price}`),
+      totalAmount: Number(`${price && (price + taxOptions.insuranceTax)}`),
       currency: "CURRENCY_KRW",
       payMethod: "CARD",
     });
@@ -193,10 +242,14 @@ export default function PaymentsAction (
               </tr>
             </tbody>
           </table>
+          <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px]">
+              <span>옵션총합</span>
+              <span>70,000원</span>
+          </div>
         </article>
 
         {/* 배송 정보 */}
-        {/* <article className="border-t-[1px] border-[#a4a4a4] font-thin">
+        <article className="border-t-[1px] border-[#a4a4a4] font-thin">
           <h3 className="text-[25px] font-bold mt-[27px]">배송정보</h3>
           <table className="mt-[27px] text-[20px]">
             <tbody>
@@ -229,54 +282,77 @@ export default function PaymentsAction (
               </tr>
             </tbody>
           </table>
-          <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px]">
-              <span>옵션총합</span>
-              <span>70,000원</span>
-          </div>
-        </article> */}
+        </article>
 
         {/* 등록비용 */}
-        {/* <article className="border-t-[1px] border-[#a4a4a4]">
+        <article className="border-t-[1px] border-[#a4a4a4]">
           <div className="flex justify-between items-center mt-[20px]">
             <h3 className="text-[25px] font-bold">등록비용</h3>
-            <select name="" id="" className="text-black w-[80px] h-[50px]">
-              <option value="">일반인</option>
-              <option value="">모건</option>
-              <option value="">수연</option>
+            <select name="" id="" className="text-black w-[80px] h-[50px]" onChange={handleValueChange}>
+              <option value="normal" selected>일반인</option>
+              <option value="disabled" >장애인</option>
             </select>
 
           </div>
           
           <table className="mt-[27px] text-[20px] w-full">
-            <tbody>
+            <tbody ref={texRef}>
+              <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
+                <th className="text-right">면세</th>
+                <td className="flex gap-x-[10px]">
+                  <span>
+                    {isAble 
+                    ? <span className="mr-[10px] text-gray-400">(면제)</span>
+                    : ""
+                     }
+                    {tax01Value.toLocaleString()}
+                  </span>원
+                </td>
+              </tr>
               <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                 <th className="text-right">취득세</th>
-                <td className="flex gap-x-[10px]"><span>0</span>원</td>
+                <td className="flex gap-x-[10px]">
+                  <span>
+                    {isAble 
+                    ? <span className="mr-[10px] text-gray-400">(면제)</span>
+                    : ""
+                     }
+                    {tax02Value.toLocaleString()}
+                  </span>원
+                </td>
               </tr>
               <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                 <th className="text-right">공채</th>
-                <td className="flex gap-x-[10px]"><span>0</span>원</td>
+                <td className="flex gap-x-[10px]">
+                  <span>
+                    {isAble 
+                    ? <span className="mr-[10px] text-gray-400">(면제)</span>
+                    : ""
+                    }
+                    {tax03Value.toLocaleString()}
+                  </span>원
+                </td>
               </tr>
               <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                 <th className="text-right">증지대</th>
-                <td className="flex gap-x-[10px]"><span>0</span>원</td>
+                <td className="flex gap-x-[10px]"><span>{taxOptions.tax04.toLocaleString()}</span>원</td>
               </tr>
               <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                 <th className="text-right">번호 (필름식기준)</th>
-                <td className="flex gap-x-[10px]"><span>0</span>원</td>
+                <td className="flex gap-x-[10px]"><span>{taxOptions.tax05.toLocaleString()}</span>원</td>
               </tr>
               <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                 <th className="text-right">등록대행 수수료</th>
-                <td className="flex gap-x-[10px]"><span>0</span>원</td>
+                <td className="flex gap-x-[10px]"><span>{taxOptions.tax06.toLocaleString()}</span>원</td>
               </tr>
           
             </tbody>
           </table>
           <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px]">
               <span>등록비용 총합</span>
-              <span>110,232원</span>
+              <span>{taxSum.toLocaleString()}</span>원
           </div>
-        </article> */}
+        </article>
 
 
         {/* 총 결제금액 */}
@@ -285,7 +361,7 @@ export default function PaymentsAction (
             <h3 className="text-[25px] font-bold">결제금액</h3>
             <div className="flex gap-x-[10px] items-center">
               <span className="text-right">총 차량 구매금액(a + b)</span>
-              <div className="text-[30px]"><span>{price && price.toLocaleString()}</span>원</div>
+              <div className="text-[30px]"><span>{price && (price + taxOptions.insuranceTax).toLocaleString()}</span>원</div>
             </div>
           </div>
           
@@ -296,7 +372,7 @@ export default function PaymentsAction (
           </div>
           <div className="flex gap-x-[10px] justify-end text-[20px]">
               <span>임시 운행 의무보험료 (b)</span>
-              <span>0원</span>
+              <span>{taxOptions.insuranceTax.toLocaleString()}원</span>
           </div>
         </article>
       </div>
@@ -339,10 +415,10 @@ export default function PaymentsAction (
                       <th className="font-light basis-1/4">배송비</th>
                       <td className="basis-3/4 text-right"><span>금액미정</span></td>
                     </tr>
-                    <tr className="flex w-full">
+                    {/* <tr className="flex w-full">
                       <th className="font-light basis-1/4">할인 금액</th>
                       <td className="basis-3/4 text-right"><span>-0</span>원</td>
-                    </tr>
+                    </tr> */}
                   </tbody>
                 </table>
               </div>
@@ -352,11 +428,11 @@ export default function PaymentsAction (
   
               <div className="flex justify-between w-full">
                 <h3 className="font-Hyundai-sans font-light text-[20px]">총 견적합계</h3>
-                <span><span className="text-[30px]">{price && price.toLocaleString()}</span>원</span>
+                <span><span className="text-[30px]">{price && (price + taxOptions.insuranceTax).toLocaleString()}</span>원</span>
               </div>
               <div className="flex justify-between w-full">
-                <h3 className="font-Hyundai-sans font-light text-[20px]">등록비용</h3>
-                <span><span className="text-[20px]">75,000</span>원</span>
+                <h3 className="font-Hyundai-sans font-light text-[20px]">등록비용 (별도납부)</h3>
+                <span><span className="text-[20px]">{taxSum.toLocaleString()}</span>원</span>
               </div>
 
             </section>

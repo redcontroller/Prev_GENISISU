@@ -1,4 +1,4 @@
-import { fetchOptionExterior, fetchOptions, fetchProducts } from "@/data/fetch/productFetch";
+import { fetchOptionExterior, fetchOptions, fetchProducts, fetchVehicles } from "@/data/fetch/productFetch";
 import PaymentsAction from "./PaymentsAction";
 import { ModelOption } from "@/types/product";
 
@@ -24,13 +24,13 @@ export default async function Payments () {
   
 
 
-  const vehicleData = vehicleOriginData.filter(item => item.extra.category.includes('vehicle'))
+  const vehicleData = await fetchVehicles();
   const vehicleInfo : VehicleInfo[] = vehicleData.map(item => ({
     name:item.name,
     image:item.mainImages[2].path,
   }))
-  // console.log('비휘클확인:::',vehicleData)
-  // console.log('확인:::',vehicleInfo)
+  // console.log('비휘클 맵 확인:::',vehicleInfo)
+  // console.log('확인:::',vehicleData.map((item)=>item.price.toLocaleString()))
 
   // OptionExterior 타입지정하고 exterior도 넘겨줘야함 총 3개 넘겨줘야함
   return(

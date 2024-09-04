@@ -1,5 +1,6 @@
 'use client';
 
+import Button from "@/components/Button";
 import useLocalStorage from "@/hook/useLocalStorage";
 import { ModelOption, OptionExterior } from "@/types/product";
 import PortOne from "@portone/browser-sdk/v2";
@@ -12,6 +13,23 @@ interface PaymentsActionProps {
   vehicleInfo : {name:string, image:string}[],
   optionData : {[item: string]: ModelOption;}[],
   exteriorData : OptionExterior;
+}
+
+declare global {
+  interface Window {
+    daum: any;
+  }
+}
+
+interface AddrType {
+  address: string;
+  zonecode: string;
+  userSelectedType:string;
+  roadAddress:string;
+  bname:string;
+  buildingName:string;
+  apartment:string;
+  jibunAddress:string;
 }
 
 export default function PaymentsAction (
@@ -34,7 +52,6 @@ export default function PaymentsAction (
   const optionExterior = exteriorData.extra.option.exterior[`${storedValue.model}`]
   // 바뀌귀전 데이터 : const optionExterior = exteriorData.extra.option.exterior.glossy?.colors[`${storedValue.model}`]
   const optionEngine = optionData[0].engine[`${storedValue.model}`]
-  console.log("엔진확인:::",optionEngine)
   const optionDrivetrain = optionData[1].drivetrain[`${storedValue.model}`]
   const optionPassenger = optionData[2].passenger[`${storedValue.model}`]
   const optionInterior = optionData[3].interior[`${storedValue.model}`]
@@ -148,11 +165,61 @@ export default function PaymentsAction (
   }
 
   // 우편주소 다음 api
+    const handleClickSearchAddr = () => {
+      new window.daum.Postcode({
+        oncomplete: function(data : AddrType) {
+            // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분입니다.
+            // 예제를 참고하여 다양한 활용법을 확인해 보세요.
+
+            let addr = ''; // 주소 변수
+            let extraAddr = ''; // 참고항목 변수
+
+            if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+              addr = data.roadAddress;
+              if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                extraAddr += data.bname;
+                }
+              // 건물명이 있고, 공동주택일 경우 추가한다.
+              if(data.buildingName !== '' && data.apartment === 'Y'){
+                  extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+              // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+              if(extraAddr !== ''){
+                  extraAddr = ' (' + extraAddr + ')';
+                }
+            // 조합된 참고항목을 해당 필드에 넣는다.
+            const postExtraAddr = document.getElementById("postExtraAddr") as HTMLInputElement;
+            if (postExtraAddr) {
+              postExtraAddr.value = extraAddr;
+            }
+            // document.getElementById("postExtraAddr").value = extraAddr;
+            } else { // 사용자가 지번 주소를 선택했을 경우(J)
+              addr = data.jibunAddress;
+            }
+            
+            const postCode = document.getElementById("postCode") as HTMLInputElement;
+            if (postCode) {
+              postCode.value = data.zonecode;
+            }
+
+            const postAddr = document.getElementById("postAddr") as HTMLInputElement;
+            if (postAddr) {
+              postAddr.value = addr;
+            }
+
+            const postDetailAddr = document.getElementById("postDetailAddr") as HTMLInputElement;
+            if (postDetailAddr) {
+              postDetailAddr.focus();
+            }
+
+        }
+      }).open();
+    }
 
   return(
     <>   
+      <Script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js" async/>
       <section>
-      <Script src="t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></Script>
         <div className="ml-[300px] pt-[250px] grid grid-cols-2 gap-x-[80px]">
           {/* 옵션 선택 정보 */}
           <div className="flex flex-col gap-y-[20px]">
@@ -204,7 +271,6 @@ export default function PaymentsAction (
                         </tbody>
                       </table>
                     </td>
-                    
                   </tr>
       
 
@@ -258,16 +324,25 @@ export default function PaymentsAction (
             {/* 배송 정보 */}
             <article className="border-t-[1px] border-[#a4a4a4] font-thin">
               <h3 className="text-[25px] font-bold mt-[27px]">배송정보</h3>
-              <table className="mt-[27px] text-[20px]">
+              <table className="mt-[27px] text-[20px] ">
                 <tbody>
                   <tr className="grid grid-cols-[100px_auto] gap-x-[140px] mb-[15px]">
                     <th className="text-right">인수방법</th>
-                    <td>매장배송</td>
+                    <td className="text-gray-400 font-normal">자택배송</td>
                   </tr>
                   <tr className="grid grid-cols-[100px_auto] gap-x-[140px] mb-[15px]">
                     <th className="text-right">배송지역</th>
                     <td className="flex gap-x-[10px]">
-                      <select name="" id="" className="text-black">
+                      <div className="grid grid-cols-2 gap-[10px] text-black">
+                        <input type="text" id="postCode" placeholder="우편번호"/>
+                        <Button onClick={handleClickSearchAddr}>우편번호 찾기</Button>
+                        <input type="text" id="postAddr" placeholder="주소" className="col-span-2" value=""/>
+                        <input type="text" id="postDetailAddr" placeholder="상세주소" />
+                        <input type="text" id="postExtraAddr" placeholder="참고 항목" />
+                      </div>
+
+
+                      {/* <select name="" id="" className="text-black">
                         <option value="01">시/군/구 선택</option>
                         <option value="01">지역2</option>
                         <option value="01">지역3</option>
@@ -276,19 +351,25 @@ export default function PaymentsAction (
                         <option value="01">동/읍/리 선택</option>
                         <option value="01">지역2</option>
                         <option value="01">지역3</option>
-                      </select>
+                      </select> */}
+
+
                     </td>
                   </tr>
                   <tr className="grid grid-cols-[100px_auto] gap-x-[140px] mb-[15px]">
                     <th className="text-right">출고센터</th>
-                    <td>노원구센터</td>
+                    <td className="text-gray-400 font-normal">노원구센터</td>
                   </tr>
                   <tr className="grid grid-cols-[100px_auto] gap-x-[140px] mb-[15px]">
                     <th className="text-right">예상출고일</th>
-                    <td>즉시출고가능</td>
+                    <td className="text-gray-400 font-normal">즉시출고가능</td>
                   </tr>
                 </tbody>
               </table>
+              <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px] font-bold">
+                <span>배송비 총합</span>
+                <span>70,000원</span>
+              </div>
             </article>
 
             {/* 등록비용 */}
@@ -306,7 +387,7 @@ export default function PaymentsAction (
                 <tbody ref={texRef}>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">면세</th>
-                    <td className="flex gap-x-[10px]">
+                    <td className="flex gap-x-[10px] text-gray-400">
                       <span>
                         {isAble 
                         ? <span className="mr-[10px] text-gray-400">(면제)</span>
@@ -318,7 +399,7 @@ export default function PaymentsAction (
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">취득세</th>
-                    <td className="flex gap-x-[10px]">
+                    <td className="flex gap-x-[10px] text-gray-400">
                       <span>
                         {isAble 
                         ? <span className="mr-[10px] text-gray-400">(면제)</span>
@@ -330,7 +411,7 @@ export default function PaymentsAction (
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">공채</th>
-                    <td className="flex gap-x-[10px]">
+                    <td className="flex gap-x-[10px] text-gray-400">
                       <span>
                         {isAble 
                         ? <span className="mr-[10px] text-gray-400">(면제)</span>
@@ -342,20 +423,20 @@ export default function PaymentsAction (
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">증지대</th>
-                    <td className="flex gap-x-[10px]"><span>{taxOptions.tax04.toLocaleString()}</span>원</td>
+                    <td className="flex gap-x-[10px] text-gray-400"><span>{taxOptions.tax04.toLocaleString()}</span>원</td>
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">번호 (필름식기준)</th>
-                    <td className="flex gap-x-[10px]"><span>{taxOptions.tax05.toLocaleString()}</span>원</td>
+                    <td className="flex gap-x-[10px] text-gray-400"><span>{taxOptions.tax05.toLocaleString()}</span>원</td>
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">등록대행 수수료</th>
-                    <td className="flex gap-x-[10px]"><span>{taxOptions.tax06.toLocaleString()}</span>원</td>
+                    <td className="flex gap-x-[10px] text-gray-400"><span>{taxOptions.tax06.toLocaleString()}</span>원</td>
                   </tr>
               
                 </tbody>
               </table>
-              <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px]">
+              <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px] font-bold">
                   <span>등록비용 총합</span>
                   <span>{taxSum.toLocaleString()}</span>원
               </div>

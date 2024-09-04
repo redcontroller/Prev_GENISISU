@@ -13,6 +13,7 @@ export default async function OrderPage({ params }: { params: { model: string } 
   const modelData = await fetchProduct(params.model);
   const imageArray =
     modelData?.extra.detail.view360Images.map((image) => SERVER + image.path) || [];
+  const modelName = modelData!.name;
   const abstract = modelData!.extra.detail.abstract;
   const exterior = modelData!.extra.detail.exterior;
   const interior = modelData!.extra.detail.interior;
@@ -20,7 +21,7 @@ export default async function OrderPage({ params }: { params: { model: string } 
 
   // const res = await fetchOptionExterior('exterior');
   const res = await fetchOption('exterior') || [];
-  // const optionData = res[0].extra.option.extra[params.model];
+  const optionData = res[0].extra.option.exterior[modelName];
 
   return (
     <>
@@ -31,7 +32,7 @@ export default async function OrderPage({ params }: { params: { model: string } 
       <Section2Intro abstract={abstract} />
 
       {/* 세번째 섹션 : 색상선택 옵션 */}
-      {/* <Section3Color modelIndex={modelIndex} optionData={optionData} /> */}
+      <Section3Color modelName={modelName} optionData={optionData} />
 
       {/* 네번째 섹션 : 외장디자인 설명 */}
       <Section4Exterior exterior={exterior} />

@@ -26,9 +26,6 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
   const initialPrice = modelData?.price || 0;
   const modelOptionData = optionData[0].extra.option[optionName][modelName];
 
-  // console.log(modelOptionData);
-  // console.log(modelOptionData.length);
-
   const [storedValue, setValue] = useLocalStorage<Cart>('cart', {
     model: modelName,
     price: initialPrice,
@@ -40,16 +37,8 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
   const defaultItemName = defaultItems[0].name;
   const defaultItemImage = defaultItems[0].image ? SERVER + defaultItems[0].image.path : '';
   const defaultItemDescription = defaultItems[0].description || '';
-
   const clickedOptionRef = useRef<Set<string>>(new Set([defaultGroupName, defaultGroupName + defaultItemName]));
   const checkOptionRef = useRef<Set<string>>(new Set());
-  // const textOptionRef = useRef<Map<string, string>>(
-  //   new Map([
-  //     ['group', defaultGroupName],
-  //     ['item', defaultItemName],
-  //   ])
-  // );
-
   const [optionState, setOptionState] = useState<{
     node: ReactNode;
     prevPrice: number;
@@ -85,9 +74,7 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
 
   const handleOptionCheck = (
     optionGroup: string,
-    // optionItem: string,
     optionPrice: number,
-    // optionImage: string
   ) => {
     let newPrice = 0;
     if (checkOptionRef.current.has(optionGroup)) {
@@ -102,8 +89,6 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
       node: list,
       prevPrice: preState.newPrice,
       newPrice: newPrice,
-      // imageSource: newImage,
-      // optionText: textOptionRef.current.get('item') || '',
     }));
   };
 
@@ -114,7 +99,6 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
     const groupName = optionGroup.topText;
     const price = optionGroup.price;
     const groupItems = optionGroup.items || [];
-    // const lastIndex = groupItems.length - 1;
     const groupImage = groupItems[0]?.image?.path ? SERVER + groupItems[0].image.path : defaultItemImage;
     const firstItem = groupItems[0]?.name;
     const firstItemText = groupItems[0].description || '';

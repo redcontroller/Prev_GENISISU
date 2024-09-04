@@ -1,17 +1,16 @@
 'use client';
 
-import { OptionDetail, OptionExterior, OptionItem } from '@/types/product';
+import { OptionDetail, OptionItem } from '@/types/product';
 import Image from 'next/image';
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import React, { ReactNode, useRef, useState } from 'react';
 
 const SERVER = process.env.NEXT_PUBLIC_API_SERVER;
 
 interface ModelColorProps {
   exterior: OptionItem[];
-  modelName: string;
 }
 
-const ModelColor: React.FC<ModelColorProps> = ({ exterior, modelName }) => {
+const ModelColor: React.FC<ModelColorProps> = ({ exterior }) => {
   const [group1, group2] = [exterior[0], exterior[1]];
   const [groupName1, groupName2] = [group1.topText, group2.topText];
   const defaultGroup = groupName1;

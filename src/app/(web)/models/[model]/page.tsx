@@ -1,4 +1,4 @@
-import { fetchOption, fetchOptionExterior, fetchProduct } from '@/data/fetch/productFetch';
+import { fetchOption, fetchProduct } from '@/data/fetch/productFetch';
 import Section1Index from './(section)/Section1Index';
 import Section2Intro from './(section)/Section2Intro';
 import Section3Color from './(section)/Section3Color';
@@ -32,7 +32,7 @@ export default async function OrderPage({ params }: { params: { model: string } 
       <Section2Intro abstract={abstract} />
 
       {/* 세번째 섹션 : 색상선택 옵션 */}
-      <Section3Color modelName={modelName} optionData={optionData} />
+      <Section3Color optionData={optionData} />
 
       {/* 네번째 섹션 : 외장디자인 설명 */}
       <Section4Exterior exterior={exterior} />

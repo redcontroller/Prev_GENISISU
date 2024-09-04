@@ -68,15 +68,20 @@ export default function PaymentsAction (
 
   const route = useRouter();
   const tbodyRef = useRef<HTMLTableSectionElement>(null)
-  const tbodyLengthRef = useRef(0)
   const texRef = useRef<HTMLTableSectionElement>(null)
+  const tbodyLengthRef = useRef(0)
   const sumRef = useRef(null)
 
   const [selValue, setSelValue] = useState("normal");
   const [tax01Value, setTax01Value] = useState(1000000)
   const [tax02Value, setTax02Value] = useState(0)
   const [tax03Value, setTax03Value] = useState(0)
-  const [isAble,setIsAble] = useState(false)
+  const [isAble, setIsAble] = useState(false)
+  const [detailAddr, setDetailAddr] = useState("")
+  const [numCardTax, setNumCardTax] = useState(0)
+
+  // console.log("주소확인:::",detailAddr.split(" ")[0] === "서울")
+  
 
   // 전체 옵션갯수 반영
   useEffect(()=>{
@@ -85,14 +90,17 @@ export default function PaymentsAction (
     }
   },[])
 
-// 세금 반영
+  // 세금 반영
   const taxOptions = {
     tax04:3000,
-    tax05:18000,
     tax06:50000,
     insuranceTax:1900,
+    seoulNumcardCharge:18000,
+    regionNumcardCharge:15700,
+    defaultNumcard:"주소를 먼저 검색해주세요"
   }
 
+  // 장애여부 세금 부과
   useEffect(()=>{
     if (texRef.current) {
       switch (selValue) {
@@ -121,7 +129,7 @@ export default function PaymentsAction (
     setSelValue(e.currentTarget.value)
   }
 
-  let taxSum = - tax01Value + tax02Value + tax03Value + taxOptions.tax04 + taxOptions.tax05 + taxOptions.tax06
+  let taxSum = - tax01Value + tax02Value + tax03Value + taxOptions.tax04 + taxOptions.seoulNumcardCharge + taxOptions.tax06
 
 
 
@@ -165,56 +173,68 @@ export default function PaymentsAction (
   }
 
   // 우편주소 다음 api
-    const handleClickSearchAddr = () => {
-      new window.daum.Postcode({
-        oncomplete: function(data : AddrType) {
-            // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분입니다.
-            // 예제를 참고하여 다양한 활용법을 확인해 보세요.
+  const handleClickSearchAddr = () => {
+    new window.daum.Postcode({
+      oncomplete: function(data : AddrType) {
+          // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분입니다.
+          // 예제를 참고하여 다양한 활용법을 확인해 보세요.
 
-            let addr = ''; // 주소 변수
-            let extraAddr = ''; // 참고항목 변수
+          let addr = ''; // 주소 변수
+          let extraAddr = ''; // 참고항목 변수
 
-            if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
-              addr = data.roadAddress;
-              if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-                extraAddr += data.bname;
-                }
-              // 건물명이 있고, 공동주택일 경우 추가한다.
-              if(data.buildingName !== '' && data.apartment === 'Y'){
-                  extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                }
-              // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-              if(extraAddr !== ''){
-                  extraAddr = ' (' + extraAddr + ')';
-                }
+          if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+            addr = data.roadAddress;
+            if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+              extraAddr += data.bname;
+              }
+            // 건물명이 있고, 공동주택일 경우 추가한다.
+            if(data.buildingName !== '' && data.apartment === 'Y'){
+                extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+              }
+            // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+            if(extraAddr !== ''){
+                extraAddr = ' (' + extraAddr + ')';
+              }
             // 조합된 참고항목을 해당 필드에 넣는다.
             const postExtraAddr = document.getElementById("postExtraAddr") as HTMLInputElement;
             if (postExtraAddr) {
-              postExtraAddr.value = extraAddr;
-            }
-            // document.getElementById("postExtraAddr").value = extraAddr;
-            } else { // 사용자가 지번 주소를 선택했을 경우(J)
-              addr = data.jibunAddress;
-            }
-            
-            const postCode = document.getElementById("postCode") as HTMLInputElement;
-            if (postCode) {
-              postCode.value = data.zonecode;
-            }
+                postExtraAddr.value = extraAddr;
+              }
+          } else { // 사용자가 지번 주소를 선택했을 경우(J)
+            addr = data.jibunAddress;
+          }
+          
+          const postCode = document.getElementById("postCode") as HTMLInputElement;
+          if (postCode) {
+            postCode.value = data.zonecode;
+          }
 
-            const postAddr = document.getElementById("postAddr") as HTMLInputElement;
-            if (postAddr) {
-              postAddr.value = addr;
-            }
+          // 중요포인트. 주소에 따라 배송비 결정부분
+          const postAddr = document.getElementById("postAddr") as HTMLInputElement;
+          if (postAddr) {
+            // postAddr.value = addr;
+            setDetailAddr(addr)
+          }
 
-            const postDetailAddr = document.getElementById("postDetailAddr") as HTMLInputElement;
-            if (postDetailAddr) {
-              postDetailAddr.focus();
-            }
+          const postDetailAddr = document.getElementById("postDetailAddr") as HTMLInputElement;
+          if (postDetailAddr) {
+            postDetailAddr.focus();
+          }
 
-        }
-      }).open();
+      }
+    }).open();
+  }
+
+  // 지역 구분에 따른 세금 부과
+  useEffect(()=>{
+    if (detailAddr.split(" ")[0] === "서울") {
+      setNumCardTax(taxOptions.seoulNumcardCharge)
+    } else if (detailAddr === "") {
+      setNumCardTax(0)
+    }else {
+      setNumCardTax(taxOptions.regionNumcardCharge)
     }
+  },[detailAddr])
 
   return(
     <>   
@@ -336,7 +356,7 @@ export default function PaymentsAction (
                       <div className="grid grid-cols-2 gap-[10px] text-black">
                         <input type="text" id="postCode" placeholder="우편번호"/>
                         <Button onClick={handleClickSearchAddr}>우편번호 찾기</Button>
-                        <input type="text" id="postAddr" placeholder="주소" className="col-span-2" value=""/>
+                        <input type="text" id="postAddr" placeholder="주소" className="col-span-2" value={detailAddr}/>
                         <input type="text" id="postDetailAddr" placeholder="상세주소" />
                         <input type="text" id="postExtraAddr" placeholder="참고 항목" />
                       </div>
@@ -367,8 +387,13 @@ export default function PaymentsAction (
                 </tbody>
               </table>
               <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px] font-bold">
-                <span>배송비 총합</span>
-                <span>70,000원</span>
+                <span>배송비</span>
+                <span>
+                  {detailAddr.split(" ")[0] === "서울" 
+                  ? "서울가격" 
+                  : "지방가격"
+                  }원
+                </span>
               </div>
             </article>
 
@@ -427,7 +452,9 @@ export default function PaymentsAction (
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">번호 (필름식기준)</th>
-                    <td className="flex gap-x-[10px] text-gray-400"><span>{taxOptions.tax05.toLocaleString()}</span>원</td>
+                    <td className="flex gap-x-[10px] text-gray-400">
+                      <span>{numCardTax.toLocaleString()}</span>원
+                    </td>
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">등록대행 수수료</th>

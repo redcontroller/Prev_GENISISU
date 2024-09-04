@@ -160,36 +160,36 @@ export default function PaymentsAction (
             <tbody>
               <tr className="grid grid-cols-[80px_auto] gap-x-[60px] mb-[15px]">
                 <th className="text-right">모델명</th>
-                <td>{title}</td>
+                <td className="text-gray-400">{title}</td>
               </tr>
               
               <tr className="grid grid-cols-[80px_auto] gap-x-[60px] mb-[15px]">
                 <th className="text-right">색상</th>
                 <td>
-                  <table className="w-full">
+                  <table className="w-full text-gray-400">
                     <tbody className="flex flex-col gap-y-[10px] h-full">
                       <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px] text-nowrap">
-                        <th className="bg-white text-black mr-[15px] rounded-[10px] font-normal">외장 컬러</th>
+                        <th className="mr-[15px] rounded-[10px] font-normal text-left">외장 컬러</th>
                         <td className="flex gap-x-[10px]">
-                          <figure className="w-[200px] h-full relative border-[1px] border-[#fff]">
+                          <figure className="w-[25px] h-[25px] relative border-[1px] border-[#fff]">
                             <Image src={optionExterior && SERVER + optionExterior?.[0].images?.[0].path} fill 
                             style={{objectFit:"cover"}} alt="" className="absolute top-0 left-0"
                             ></Image>
                           </figure>
-                          <span>| {optionExterior?.[0].name}</span>
+                          <span>{optionExterior?.[0].name}</span>
                         </td>
                         <td className="text-right">{optionExterior && optionExterior?.[0].price?.toLocaleString()}원</td>
                       </tr>
 
                       <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px] text-nowrap">
-                        <th className="bg-white text-black mr-[15px] rounded-[10px] font-normal">내장 컬러</th>
+                        <th className="mr-[15px] rounded-[10px] font-normal text-left">내장 컬러</th>
                         <td className="flex gap-x-[10px]">
-                          <figure className="w-[200px] h-full bg-white relative border-[1px] border-[#fff]">
+                          <figure className="w-[25px] h-[25px] bg-white relative border-[1px] border-[#fff]">
                             <Image src={optionInterior && SERVER + optionInterior?.[0].items?.[0].images?.[0].path} fill 
                               style={{objectFit:"cover"}} alt="" className="absolute top-0 left-0"
                               ></Image>
                           </figure>
-                          <span>| {optionInterior?.[0].items?.[0].name}</span>
+                          <span>{optionInterior?.[0].items?.[0].name}</span>
                         </td>
                         <td className="text-right">{optionInterior?.[0].items?.[0].price?.toLocaleString()}원</td>
                       </tr>
@@ -204,34 +204,34 @@ export default function PaymentsAction (
               <tr className="grid grid-cols-[80px_auto] gap-x-[60px] mb-[15px]">
                 <th className="text-right">옵션</th>
                 <td>
-                  <table className="w-full">
+                  <table className="w-full text-gray-400">
                     <tbody className="flex flex-col gap-y-[10px]" ref={tbodyRef}>
                       <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
-                        <th className="bg-white text-black mr-[15px] rounded-[10px] font-normal">엔진 타입</th>
+                        <th className="text-left mr-[15px] rounded-[10px] font-normal">엔진 타입</th>
                         <td className="text-left"><span className="w-[50px] mr-[20px] ">| 기본 |</span>{optionEngine?.[0].topText}</td>
                         <td className="text-right">{optionEngine?.[0].price.toLocaleString()}원</td>
                       </tr>
 
                       <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
-                        <th className="bg-white text-black mr-[15px] rounded-[10px] font-normal">구동 타입</th>
+                        <th className="text-left mr-[15px] rounded-[10px] font-normal">구동 타입</th>
                         <td className="text-left"><span className="w-[50px] mr-[20px]">| 기본 |</span>{optionDrivetrain?.[0].topText}</td>
                         <td className="text-right">{optionDrivetrain?.[0].price.toLocaleString()}원</td>
                       </tr>
 
                       <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
-                        <th className="bg-white text-black mr-[15px] rounded-[10px] font-normal">시트 구성</th>
+                        <th className="text-left mr-[15px] rounded-[10px] font-normal">시트 구성</th>
                         <td className="text-left"><span className="w-[50px] mr-[20px]">| 기본 |</span>{optionPassenger?.[0].topText}</td>
                         <td className="text-right">{optionPassenger?.[0].price.toLocaleString()}원</td>
                       </tr>
 
                       <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
-                        <th className="bg-white text-black mr-[15px] rounded-[10px] font-normal">내장 가니쉬</th>
+                        <th className="text-left mr-[15px] rounded-[10px] font-normal">내장 가니쉬</th>
                         <td className="text-left"><span className="w-[50px] mr-[20px]">| 기본 |</span>{optionGarnish?.[0].topText}</td>
                         <td className="text-right">{optionGarnish?.[0].price.toLocaleString()}원</td>
                       </tr>
 
                       <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
-                        <th className="bg-white text-black mr-[15px] rounded-[10px] font-normal">휠 & 타이어</th>
+                        <th className="text-left mr-[15px] rounded-[10px] font-normal">휠 & 타이어</th>
                         <td className="text-left"><span className="w-[50px] mr-[20px]">| 기본 |</span>{optionWheel?.[0].topText}</td>
                         <td className="text-right">{optionWheel?.[0].price.toLocaleString()}원</td>
                       </tr>
@@ -242,7 +242,7 @@ export default function PaymentsAction (
               </tr>
             </tbody>
           </table>
-          <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px]">
+          <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px] font-bold">
               <span>옵션총합</span>
               <span>70,000원</span>
           </div>
@@ -303,7 +303,7 @@ export default function PaymentsAction (
                   <span>
                     {isAble 
                     ? <span className="mr-[10px] text-gray-400">(면제)</span>
-                    : ""
+                    : "- "
                      }
                     {tax01Value.toLocaleString()}
                   </span>원

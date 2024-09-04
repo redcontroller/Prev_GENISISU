@@ -1,6 +1,5 @@
 'use client';
 
-import Button from '@/components/Button';
 import useLocalStorage from '@/hook/useLocalStorage';
 import { Cart, Option, OptionDetail, OptionItem, Product } from '@/types/product';
 import { useModelStore } from '@/zustand/useModel';
@@ -95,7 +94,6 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
     return items.map((item: OptionDetail, index: number) => {
       // const isBolder = index === lastIndex ? 'border-b-[1px]' : '';
       const { name, price = 0, images = [] } = item;
-      // console.log(name);
       const colorChipImage = SERVER + images[0].path;
       const vehicleImage = SERVER + images[1].path;
       // console.log(colorChipImage);
@@ -105,7 +103,7 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
           onClick={() => handleOptionClick(groupName, name, price, vehicleImage)}
           className="w-[95px] h-[50px]"
         >
-          <figure className={`w-[95px] h-[50px] relative ${isClicked(groupName + name)}`}>
+          <figure className={`w-[95px] h-[50px] relative ${isClicked(groupName + name)} hover:cursor-pointer`}>
             <Image src={colorChipImage} fill sizes="100%" alt={`${name}`} />
           </figure>
         </li>
@@ -122,14 +120,17 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
     const itemName = textOptionRef.current.get('group') === groupName ? refItem : '';
     const optionData = generateOptionButton(optionGroup);
     return (
-      <table key={groupName}>
+      <table
+        key={groupName}
+        className='mb-8'
+      >
         <tbody>
           {/* 그룹 타이틀 */}
           <tr>
-            <td className={`pl-[15px] ${isOptionActive(groupName)}`}>{groupName}</td>
+            <td className={`pl-[15px] text-[22px] ${isOptionActive(groupName)}`}>{groupName}</td>
           </tr>
           {/* 옵션 텍스트 */}
-          <tr className="flex items-center text-[30px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] pt-[30px] pl-[15px]">
+          <tr className="flex items-center text-[18px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] pt-[30px] pl-[15px]">
             <td className={`font-Hyundai-sans ${isOptionActive(groupName + itemName)}`}>{itemName}</td>
             <td>
               {/* 옵션 버튼 생성 */}
@@ -167,7 +168,7 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
     <>
       <section className="h-screen relative flex flex-col-reverse">
         <article className="flex flex-col absolute items-center w-[1440px] right-[50px] top-[50px]">
-          <figure className="w-[700px] h-[350px] relative">
+          <figure className="w-[960px] h-[400px] relative">
             <Image
               src={optionState.imageSource}
               fill
@@ -177,17 +178,11 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
               priority
             />
           </figure>
-          <h4>상기 이미지는 차량의 대표 이미지로 적용되어 있습니다.</h4>
+          <h4 className='text-[16px]'>상기 이미지는 차량의 대표 이미지로 적용되어 있습니다.</h4>
           {list}
         </article>
 
         <div className="grid grid-cols-[60px_60px] grid-rows-[50px] gap-x-[20px] absolute top-[620px] left-[80px]">
-            {/* <Button size="custom" onClick={(e) => clickButton(e, 'prev')}>
-              이전
-            </Button>
-            <Button color="black" bgColor="white" size="custom" onClick={clickButton}>
-              다음
-            </Button> */}
             <button className='bg-black border-[0.5px] border-white w-full h-full' onClick={(e) => clickButton(e, 'prev')}>
               <figure className='relative w-full h-[75%]'>
                 <Image className='absolute top-0 left-0' src="/images/btn_prev.png" alt="버튼 좌측 이미지" fill style={{objectFit:"contain"}}/>

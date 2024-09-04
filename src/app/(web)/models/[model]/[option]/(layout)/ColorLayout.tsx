@@ -1,6 +1,5 @@
 'use client';
 
-import Button from '@/components/Button';
 import useLocalStorage from '@/hook/useLocalStorage';
 import { Cart, Option, OptionDetail, OptionItem, Product } from '@/types/product';
 import { useModelStore } from '@/zustand/useModel';
@@ -95,7 +94,6 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
     return items.map((item: OptionDetail, index: number) => {
       // const isBolder = index === lastIndex ? 'border-b-[1px]' : '';
       const { name, price = 0, images = [] } = item;
-      // console.log(name);
       const colorChipImage = SERVER + images[0].path;
       const vehicleImage = SERVER + images[1].path;
       // console.log(colorChipImage);

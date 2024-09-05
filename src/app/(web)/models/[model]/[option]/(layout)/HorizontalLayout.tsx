@@ -37,7 +37,12 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
   const defaultItemName = defaultItems[0].name;
   const defaultItemImage = defaultItems[0].image ? SERVER + defaultItems[0].image.path : '';
   const defaultItemDescription = defaultItems[0].description || '';
-  const clickedOptionRef = useRef<Set<string>>(new Set([defaultGroupName, defaultGroupName + defaultItemName]));
+  const defaultMapData = {
+    group: defaultGroupName,
+    item : defaultGroupName + defaultItemName,
+    price : 0
+  };
+  const clickedOptionRef = useRef<Map<string, string | number>>(new Map(Object.entries(defaultMapData)));
   const checkOptionRef = useRef<Set<string>>(new Set());
   const [optionState, setOptionState] = useState<{
     node: ReactNode;
@@ -58,10 +63,12 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
     optionItem: string,
     optionImage: string,
     optionText: string,
+    optionPrice: number
   ) => {
     clickedOptionRef.current.clear();
-    clickedOptionRef.current.add(optionGroup);
-    clickedOptionRef.current.add(optionGroup + optionItem);
+    clickedOptionRef.current.set('group', optionGroup);
+    clickedOptionRef.current.set('item', optionGroup + '-' + optionItem);
+    clickedOptionRef.current.set('price', optionPrice);
     const newImage = optionImage;
 
     setOptionState((preState) => ({
@@ -110,7 +117,7 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
         className={`flex flex-col items-left text-[18px] gap-x-[86px] border-t-[1px] border-[#a4a4a4] py-[15px] pl-[15px]`}
       >
         <td 
-          onClick={() => handleOptionClick(groupName, firstItem, groupImage, firstItemText)}
+          onClick={() => handleOptionClick(groupName, firstItem, groupImage, firstItemText, price)}
           className={`font-Hyundai-sans flex gap-x-3 items-center font-bold ${isOptionActive(groupName)} `}
         >
           <figure 
@@ -129,11 +136,12 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
               const itemImage = item.image?.path ? SERVER + item.image.path : '';
               const itemName = item.name;
               const itemText = item.description || '';
+              const itemPrice = item.price || 0;
               return (
                 <li 
                   key={item.name + j}
-                  onClick={() => handleOptionClick(groupName, itemName, itemImage, itemText)}
-                  className={`${isOptionActive(groupName + itemName)} hover:cursor-pointer`}
+                  onClick={() => handleOptionClick(groupName, itemName, itemImage, itemText, itemPrice)}
+                  className={`${isOptionActive(groupName + '-' + itemName)} hover:cursor-pointer`}
                 >
                   {item.name}
                 </li>
@@ -149,7 +157,6 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
   const currentStep = steps.indexOf(optionName);
   const nextStep = steps[currentStep + 1];
   const prevStep = steps[currentStep - 1] === 'detail' ? '' : steps[currentStep - 1];
-
   const clickButton = (e: React.MouseEvent<HTMLButtonElement>, direction?: string) => {
     e.preventDefault();
     const step = direction === 'prev' ? prevStep : nextStep;
@@ -157,6 +164,13 @@ export default function HorizontalLayout({ params, modelData, optionData }: Hori
     setValue({
       model: modelName,
       price: optionState.newPrice,
+      option: {
+        ...storedValue.option,
+        [optionName]: {
+          name: clickedOptionRef.current!.get('item') as string,
+          price: clickedOptionRef.current!.get('price') as number,
+        }
+      }
     });
   };
 

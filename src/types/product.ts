@@ -86,9 +86,8 @@ interface OptionColor {
   category: string[];
   topText: string;
   colors: {
-    [model:string]:OptionDetail[]    
+    [model: string]: OptionDetail[];
   };
-
 }
 
 export interface ExteriorData {
@@ -98,12 +97,12 @@ export interface ExteriorData {
     matte: OptionColor;
     [key: string]: any;
   };
-};
+}
 
 export interface OptionExterior extends Common {
   extra: {
     category: string[];
-    option: ExteriorData
+    option: ExteriorData;
   };
 }
 
@@ -137,6 +136,13 @@ export interface Option extends Common {
 export interface Cart {
   model: string;
   price: number;
+  option?: {
+    [optionName: string]: {
+      name: string;
+      price: number;
+      image?: string;
+    };
+  };
 }
 
 // export interface Thumbnail {

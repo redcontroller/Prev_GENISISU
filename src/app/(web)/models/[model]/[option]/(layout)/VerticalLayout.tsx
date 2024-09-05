@@ -1,6 +1,5 @@
 'use client';
 
-import Button from '@/components/Button';
 import useLocalStorage from '@/hook/useLocalStorage';
 import { Cart, Option, OptionItem, Product } from '@/types/product';
 import { useModelStore } from '@/zustand/useModel';
@@ -29,32 +28,19 @@ export default function VerticalLayout({ params, modelData, optionData }: Vertic
 
   const [storedValue, setValue] = useLocalStorage<Cart>('cart', {
     model: modelName,
-    price: initialPrice,
+    price: initialPrice
   });
 
-  const defaultImage = SERVER + modelOptionData[0].image?.path || '';
-  const [optionState, setOptionState] = useState<{
-    node: ReactNode;
-    prevPrice: number;
-    newPrice: number;
-    imageSource: string;
-  }>({
-    node: null,
-    prevPrice: storedValue.price,
-    newPrice: storedValue.price,
-    imageSource: defaultImage,
-  });
-  const defaultOptionItem = modelOptionData[0].topText;
-  const clickedOptionRef = useRef<Set<string>>(new Set([defaultOptionItem]));
-
-  const { steps } = useModelStore();
-  const currentStep = steps.indexOf(optionName);
-  const nextStep = steps[currentStep + 1];
-  const prevStep = steps[currentStep - 1] === 'detail' ? '' : steps[currentStep - 1];
+  const defaultMapData = {
+    item: modelOptionData[0].topText,
+    price: modelOptionData[0].price
+  };
+  const clickedOptionRef = useRef<Map<string, string | number>>(new Map(Object.entries(defaultMapData)));
 
   const handleOptionClick = (optionName: string, optionIndex: number, optionPrice: number) => {
     clickedOptionRef.current.clear();
-    clickedOptionRef.current.add(optionName);
+    clickedOptionRef.current.set('item', optionName);
+    clickedOptionRef.current.set('price', optionPrice);
     const newImage = SERVER + modelOptionData[optionIndex].image?.path;
     const newPrice = optionPrice === 0 ? storedValue.price : storedValue.price + optionPrice;
     setOptionState({
@@ -66,7 +52,7 @@ export default function VerticalLayout({ params, modelData, optionData }: Vertic
   };
 
   const isOptionActive = (option: string) =>
-    clickedOptionRef.current.has(option) ? 'text-white' : 'text-[#666666]';
+    clickedOptionRef.current.get('item') === option ? 'text-white' : 'text-[#666666]';
 
   const generateOptionButton = (): ReactNode => {
     const lastIndex = modelOptionData.length - 1;
@@ -75,22 +61,38 @@ export default function VerticalLayout({ params, modelData, optionData }: Vertic
       const isBolder = index === lastIndex ? 'border-b-[1px]' : '';
       return (
         <tr
-          key={index}
+          key={topText + index}
           onClick={() => handleOptionClick(topText, index, price)}
-          className={`flex items-center text-[30px] ${isOptionActive(
-            topText
-          )} gap-x-[86px] border-t-[1px] ${isBolder} border-[#a4a4a4] py-[15px] pl-[15px] cursor-pointer`}
+          className={`flex items-center text-[30px] ${isOptionActive(topText)} gap-x-[86px] border-t-[1px] ${isBolder} border-[#a4a4a4] py-[15px] pl-[15px] cursor-pointer`}
         >
-          <td className="font-Hyundai-sans" data-value="">
+          <td className="font-Hyundai-sans text-[22px]">
             {topText}
           </td>
-          <td className="font-Hyundai-sans" data-value="">
+          <td className="font-Hyundai-sans text-[22px]" data-value="">
             + {price.toLocaleString('ko-KR')} 원
           </td>
         </tr>
       );
     });
   };
+
+  const defaultImage = SERVER + modelOptionData[0].image?.path || '';
+  const [optionState, setOptionState] = useState<{
+    node: ReactNode;
+    prevPrice: number;
+    newPrice: number;
+    imageSource: string;
+  }>({
+    node: generateOptionButton(),
+    prevPrice: storedValue.price,
+    newPrice: storedValue.price,
+    imageSource: defaultImage,
+  });
+
+  const { steps } = useModelStore();
+  const currentStep = steps.indexOf(optionName);
+  const nextStep = steps[currentStep + 1];
+  const prevStep = steps[currentStep - 1] === 'detail' ? '' : steps[currentStep - 1];
 
   const clickButton = (e: React.MouseEvent<HTMLButtonElement>, direction?: string) => {
     e.preventDefault();
@@ -99,15 +101,15 @@ export default function VerticalLayout({ params, modelData, optionData }: Vertic
     setValue({
       model: modelName,
       price: optionState.newPrice,
+      option: {
+        ...storedValue.option,
+        [optionName]: {
+          name: clickedOptionRef.current!.get('item') as string,
+          price: clickedOptionRef.current!.get('price') as number,
+        }
+      }
     });
   };
-
-  useEffect(() => {
-    setOptionState((prevState) => ({
-      ...prevState,
-      node: generateOptionButton(),
-    }));
-  }, []);
 
   return (
     <>
@@ -115,9 +117,9 @@ export default function VerticalLayout({ params, modelData, optionData }: Vertic
         <div></div>
         <article className="w-[80%] grid grid-cols-[auto] grid-rows-[minmax(auto,_500px)_50px_200px] items-center ">
           <figure className="max-h-[500px] aspect-[2/1] relative ">
-            <Image src={optionState.imageSource} fill className='absolute top-0 left-[0%]' style={{objectFit:"contain"}} alt="" />
+            <Image src={optionState.imageSource} fill sizes='100%' priority className='absolute top-0 left-[0%]' style={{objectFit:"contain"}} alt="" />
           </figure>
-          <h4 className="justify-self-center">상기 이미지는 차량의 대표 이미지로 적용되어 있습니다.</h4>
+          <h4 className="justify-self-center text-[16px]">상기 이미지는 차량의 대표 이미지로 적용되어 있습니다.</h4>
           <article className="h-full overflow-scroll">
             <table className="w-full">
               <tbody>
@@ -130,12 +132,12 @@ export default function VerticalLayout({ params, modelData, optionData }: Vertic
         <div className="grid grid-cols-[60px_60px] grid-rows-[50px] gap-x-[20px] absolute top-[620px] left-[80px]">
           <button className='bg-black border-[0.5px] border-white w-full h-full' onClick={(e) => clickButton(e, 'prev')}>
             <figure className='relative w-full h-[75%]'>
-              <Image className='absolute top-0 left-0' src="/images/btn_prev.png" alt="버튼 좌측 이미지" fill style={{objectFit:"contain"}}/>
+              <Image className='absolute top-0 left-0' fill sizes='100%' src="/images/btn_prev.png" alt="버튼 좌측 이미지" style={{objectFit:"contain"}}/>
             </figure>
           </button>
           <button className='bg-white w-full h-full' onClick={clickButton}>
             <figure className='relative w-full h-[75%]'>
-              <Image className='absolute top-0 left-0' src="/images/btn_next_b.png" alt="버튼 좌측 이미지" fill style={{objectFit:"contain"}}/>
+              <Image className='absolute top-0 left-0' fill sizes='100%' src="/images/btn_next_b.png" alt="버튼 좌측 이미지" style={{objectFit:"contain"}}/>
             </figure>
           </button>
       </div>

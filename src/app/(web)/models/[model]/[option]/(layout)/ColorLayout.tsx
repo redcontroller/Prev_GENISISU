@@ -6,6 +6,7 @@ import { useModelStore } from '@/zustand/useModel';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import { text } from 'stream/consumers';
 
 interface ColorLayoutProps {
   params: {
@@ -39,14 +40,16 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
   const defaultGroupName = defaultData.topText;
   const defaultItemName = defaultItems[0].name;
   const defaultItemImage = defaultItems[0].images ? SERVER + defaultItems[0].images[1].path : '';
+  const defaultItemChipImage = defaultItems[0].images ? SERVER + defaultItems[0].images[0].path : '';
 
   const clickedOptionRef = useRef<Set<string>>(new Set([defaultGroupName, defaultGroupName + defaultItemName]));
-  const textOptionRef = useRef<Map<string, string>>(
-    new Map([
-      ['group', defaultGroupName],
-      ['item', defaultItemName],
-    ])
-  );
+  const defaultMapData = {
+    group: defaultGroupName,
+    item: defaultItemName,
+    price: 0,
+    image: defaultItemChipImage
+  }
+  const textOptionRef = useRef<Map<string, string | number>>(new Map(Object.entries(defaultMapData)));
 
   const [optionState, setOptionState] = useState<{
     node: ReactNode;
@@ -66,23 +69,26 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
     optionGroup: string,
     optionItem: string,
     optionPrice: number,
-    optionImage: string
+    optionVehicleImage: string,
+    optionColorChipImage: string,
   ) => {
     clickedOptionRef.current.clear();
     clickedOptionRef.current.add(optionGroup);
     clickedOptionRef.current.add(optionGroup + optionItem);
-    const newImage = optionImage;
+    const newImage = optionVehicleImage;
     // 로컬스토리지 기준값: storedValue.price
     const newPrice = optionPrice === 0 ? storedValue.price : storedValue.price + optionPrice;
     textOptionRef.current.set('group', optionGroup);
     textOptionRef.current.set('item', optionItem);
+    textOptionRef.current.set('price', optionPrice);
+    textOptionRef.current.set('image', optionColorChipImage);
 
     setOptionState({
       node: list,
       prevPrice: optionState.newPrice,
       newPrice: newPrice,
       imageSource: newImage,
-      optionText: textOptionRef.current.get('item') || '',
+      optionText: textOptionRef.current.get('item') as string || '',
     });
   };
 
@@ -96,11 +102,10 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
       const { name, price = 0, images = [] } = item;
       const colorChipImage = SERVER + images[0].path;
       const vehicleImage = SERVER + images[1].path;
-      // console.log(colorChipImage);
       return (
         <li
           key={name}
-          onClick={() => handleOptionClick(groupName, name, price, vehicleImage)}
+          onClick={() => handleOptionClick(groupName, name, price, vehicleImage, colorChipImage)}
           className="w-[95px] h-[50px]"
         >
           <figure className={`w-[95px] h-[50px] relative ${isClicked(groupName + name)} hover:cursor-pointer`}>
@@ -151,9 +156,18 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
     e.preventDefault();
     const step = direction === 'prev' ? prevStep : nextStep;
     router.push(`/models/${params.model}/${step}`);
+    const temp = `${textOptionRef.current!.get('group')}-${textOptionRef.current!.get('item')}`
     setValue({
       model: modelName,
       price: optionState.newPrice,
+      option: {
+        ...storedValue.option,
+        [optionName]: {
+          name: temp,
+          price: textOptionRef.current!.get('price') as number,
+          image: textOptionRef.current!.get('image') as string,
+        }
+      }
     });
   };
 
@@ -185,12 +199,12 @@ export default function ColorLayout({ params, modelData, optionData }: ColorLayo
         <div className="grid grid-cols-[60px_60px] grid-rows-[50px] gap-x-[20px] absolute top-[620px] left-[80px]">
             <button className='bg-black border-[0.5px] border-white w-full h-full' onClick={(e) => clickButton(e, 'prev')}>
               <figure className='relative w-full h-[75%]'>
-                <Image className='absolute top-0 left-0' src="/images/btn_prev.png" alt="버튼 좌측 이미지" fill style={{objectFit:"contain"}}/>
+                <Image className='absolute top-0 left-0' fill sizes='100%' src="/images/btn_prev.png" alt="버튼 좌측 이미지" style={{objectFit:"contain"}}/>
               </figure>
             </button>
             <button className='bg-white w-full h-full' onClick={clickButton}>
               <figure className='relative w-full h-[75%]'>
-                <Image className='absolute top-0 left-0' src="/images/btn_next_b.png" alt="버튼 좌측 이미지" fill style={{objectFit:"contain"}}/>
+                <Image className='absolute top-0 left-0' fill sizes='100%' src="/images/btn_next_b.png" alt="버튼 좌측 이미지" style={{objectFit:"contain"}}/>
               </figure>
             </button>
         </div>

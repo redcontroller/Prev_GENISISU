@@ -34,6 +34,21 @@ interface AddrType {
   sido:string;
 }
 
+interface TaxOptions {
+  tax04: number;
+  tax06: number;
+  insuranceTax: number;
+  seoulNumcardCharge: number;
+  regionNumcardCharge: number;
+  defaultNumcard: string;
+  shippingTaxGroupCapital: number;
+  shippingTaxGroupJeju: number;
+  shippingTaxGroupOther: number;
+  regionTax: {
+    [key: string]: number;
+  };
+}
+
 export default function PaymentsAction (
 
   {vehicleInfo, optionData, exteriorData}: PaymentsActionProps) {
@@ -46,15 +61,19 @@ export default function PaymentsAction (
 
 
 
-  const optionExterior = exteriorData.extra.option.exterior[`${storedValue.model}`]
-  // 바뀌귀전 데이터 : const optionExterior = exteriorData.extra.option.exterior.glossy?.colors[`${storedValue.model}`]
-  const optionEngine = optionData[0].engine[`${storedValue.model}`]
-  const optionDrivetrain = optionData[1].drivetrain[`${storedValue.model}`]
-  const optionPassenger = optionData[2].passenger[`${storedValue.model}`]
-  const optionInterior = optionData[3].interior[`${storedValue.model}`]
-  const optionGarnish = optionData[4].garnish[`${storedValue.model}`]
-  const optionWheel = optionData[5].wheel[`${storedValue.model}`]
+  // 선택안했을때 기본 옵션 저장 (각 옵션값의 첫번째)
+  const optionExterior = exteriorData.extra.option.exterior[`${storedValue.model}`] // 외장 컬러
+  const optionInterior = optionData[3].interior[`${storedValue.model}`] // 내장 컬러
+
+  const optionEngine = optionData[0].engine[`${storedValue.model}`] // 엔진 타입
+  const optionDrivetrain = optionData[1].drivetrain[`${storedValue.model}`] // 구동 타입
+  const optionPassenger = optionData[2].passenger[`${storedValue.model}`] // 시트 구성
+  const optionGarnish = optionData[4].garnish[`${storedValue.model}`] // 내장 가니쉬
+  const optionWheel = optionData[5].wheel[`${storedValue.model}`] // 휠 & 타이어
   // const optionAdd = optionData[0].add[`${storedValue.model}`]
+
+  // console.log("일치하나요? 지금은 false가 나와야함",optionEngine[0].topText === storedValue.option.engine.name)
+console.log("값유무 확인:::",storedValue.option?.engine)
 
   const title = storedValue.model && storedValue.model?.split('-').join(' ').toUpperCase();
   const price = Number(storedValue.price);
@@ -90,7 +109,7 @@ export default function PaymentsAction (
   },[])
 
   // 세금 반영
-  const taxOptions = {
+  const taxOptions : TaxOptions = {
     tax04:3000,
     tax06:50000,
     insuranceTax:1900,
@@ -100,6 +119,25 @@ export default function PaymentsAction (
     shippingTaxGroupCapital:385000,
     shippingTaxGroupJeju:530000,
     shippingTaxGroupOther:277000,
+    regionTax:{
+      "서울": 353000,
+      "인천": 389000,
+      "경기": 415000,
+      "강원특별자치도": 393000,
+      "세종특별자치시": 300000,
+      "충남": 319000,
+      "대전": 278000,
+      "충북": 351000,
+      "대구": 176000,
+      "경북": 176000,
+      "부산": 275000,
+      "경남": 336000,
+      "울산": 262000,
+      "전북특별자치도": 380000,
+      "전남": 409000,
+      "광주": 326000,
+      "제주특별자치도": 530000
+    }
   }
 
   // 장애여부 세금 부과
@@ -222,26 +260,10 @@ export default function PaymentsAction (
           if (postDetailAddr) {
             postDetailAddr.focus();
           }
-          // setSigungu(data.sigungu)
-          switch (data.sido) {
-            case "서울":
-              setSidoTax(prev => prev = taxOptions.shippingTaxGroupCapital.toLocaleString())
-              break;
-            case "인천":
-              setSidoTax(prev => prev = taxOptions.shippingTaxGroupCapital.toLocaleString())
-              break;
-            case "경기":
-              setSidoTax(prev => prev = taxOptions.shippingTaxGroupCapital.toLocaleString())
-              break;
-            case "제주특별자치도":
-              setSidoTax(prev => prev = taxOptions.shippingTaxGroupJeju.toLocaleString())
-              break;
-            default:
-              setSidoTax(prev => prev = taxOptions.shippingTaxGroupOther.toLocaleString())
-              break;
-          }
-            // 대괄호표기법으로 변경후 switch 줄이기
-          
+
+          // sido (시/도) 구분에 따라 taxOption의 regionTax 값 일치 비교하여 배송비 결정
+          setSidoTax(prev => prev = taxOptions.regionTax[data.sido].toLocaleString())
+
 
       }
     }).open();
@@ -324,33 +346,85 @@ export default function PaymentsAction (
                         <tbody className="flex flex-col gap-y-[10px]" ref={tbodyRef}>
                           <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
                             <th className="text-left mr-[15px] rounded-[10px] font-normal">엔진 타입</th>
-                            <td className="text-left">{optionEngine?.[0].topText}</td>
-                            <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionEngine?.[0].price.toLocaleString()}원</td>
+                              {optionEngine[0].topText === storedValue.option?.engine.name 
+                              ?
+                                <>
+                                  <td className="text-left">{optionEngine?.[0].topText}</td>
+                                  <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionEngine?.[0].price.toLocaleString()}원</td>
+                                </>
+                              :
+                                <>
+                                  <td className="text-left">{storedValue.option?.engine.name}</td>
+                                  <td className="text-right">{storedValue.option?.engine.price.toLocaleString()}원</td>
+                                </>
+                              }
                           </tr>
 
-                          <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
+                          {/* <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
                             <th className="text-left mr-[15px] rounded-[10px] font-normal">구동 타입</th>
-                            <td className="text-left">{optionDrivetrain?.[0].topText}</td>
-                            <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionDrivetrain?.[0].price.toLocaleString()}원</td>
+                            {optionDrivetrain[0].topText === storedValue.option?.drivetrain.name
+                              ?
+                                <>
+                                  <td className="text-left">{optionDrivetrain?.[0].topText}</td>
+                                  <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionDrivetrain?.[0].price.toLocaleString()}원</td>
+                                </>
+                              : 
+                                <>
+                                  <td className="text-left">{storedValue.option?.engine.name}</td>
+                                  <td className="text-right">{storedValue.option?.engine.price.toLocaleString()}원</td>
+                                </>
+                            }
+
                           </tr>
 
                           <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
                             <th className="text-left mr-[15px] rounded-[10px] font-normal">시트 구성</th>
-                            <td className="text-left">{optionPassenger?.[0].topText}</td>
-                            <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionPassenger?.[0].price.toLocaleString()}원</td>
+                            {optionPassenger[0].topText === storedValue.option?.passenger.name
+                              ?
+                                <>
+                                  <td className="text-left">{optionPassenger?.[0].topText}</td>
+                                  <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionPassenger?.[0].price.toLocaleString()}원</td>
+                                </>
+                              : 
+                                <>
+                                  <td className="text-left">{storedValue.option?.passenger.name}</td>
+                                  <td className="text-right">{storedValue.option?.passenger.price.toLocaleString()}원</td>
+                                </>
+                            }
                           </tr>
 
                           <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
                             <th className="text-left mr-[15px] rounded-[10px] font-normal">내장 가니쉬</th>
-                            <td className="text-left">{optionGarnish?.[0].topText}</td>
-                            <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionGarnish?.[0].price.toLocaleString()}원</td>
+                            {optionGarnish[0].topText === storedValue.option?.garnish.name
+                              ?
+                                <>
+                                  <td className="text-left">{optionGarnish?.[0].topText}</td>
+                                  <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionGarnish?.[0].price.toLocaleString()}원</td>
+                                </>
+                              : 
+                                <>
+                                  <td className="text-left">{storedValue.option?.garnish.name}</td>
+                                  <td className="text-right">{storedValue.option?.garnish.price.toLocaleString()}원</td>
+                                </>
+                            }
                           </tr>
 
                           <tr className="grid grid-cols-[90px_4fr_minmax(100px,auto)] gap-x-[5px]">
                             <th className="text-left mr-[15px] rounded-[10px] font-normal">휠 & 타이어</th>
-                            <td className="text-left">{optionWheel?.[0].topText}</td>
-                            <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionWheel?.[0].price.toLocaleString()}원</td>
-                          </tr>
+                            {optionWheel[0].topText === storedValue.option?.wheel.name
+                              ?
+                                <>
+                                  <td className="text-left">{optionWheel?.[0].topText}</td>
+                                  <td className="text-right"><span className="w-[50px] mr-[10px]">(기본)</span>{optionWheel?.[0].price.toLocaleString()}원</td>
+                                </>
+                              : 
+                                <>
+                                  <td className="text-left">{storedValue.option?.wheel.name}</td>
+                                  <td className="text-right">{storedValue.option?.wheel.price.toLocaleString()}원</td>
+                                </>
+                            }
+
+                          </tr> */}
 
                         </tbody>
                       </table>
@@ -504,9 +578,9 @@ export default function PaymentsAction (
             {/* 총 결제금액 */}
             <article className="border-t-[1px] border-[#a4a4a4]">
               
-              <div className="w-full flex justify-between mt-[30px] ">
+              <div className="w-full flex justify-between mt-[30px]">
                 <h3 className="text-[25px] font-bold text-nowrap">결제금액</h3>
-                <div className="text-gray-400 w-full">
+                <div className="text-gray-400 w-full flex flex-col gap-y-[10px]">
                   <div className="grid grid-cols-[3fr_1fr] justify-end">
                       <span className="text-right">옵션 총합 (a)</span>
                       <span className="text-right">-원</span>
@@ -527,8 +601,8 @@ export default function PaymentsAction (
                
               </div>         
 
-              <div className="flex gap-x-[10px] justify-end items-center mt-[10px]">
-                <span className="text-[20px] text-right">총 차량 구매금액(a + b + c + d)</span>
+              <div className="flex gap-x-[10px] justify-end items-center mt-[20px] mb-[30px]">
+                <span className="text-[20px] text-right">총 차량 구매금액 <span className="text-gray-400">(a + b + c + d)</span></span>
                 <div className="text-[30px]"><span>{price && (price + taxOptions.insuranceTax).toLocaleString()}</span>원</div>
               </div>
 

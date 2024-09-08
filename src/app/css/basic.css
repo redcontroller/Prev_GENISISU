@@ -952,3 +952,18 @@ main#drivePage .drive form button {
   height: 100%;
   opacity: 30%;
 } */
+
+
+/* 결제페이지 옵션 */
+.optionBullet>span {position:relative; padding-left: 15px;}
+.optionBullet>span::before {
+  position:absolute; left:0; top:50%; transform:translateY(-50%); content:'';
+  width:3.5px; height:3.5px; background:#bbb;
+  display: block;
+}
+/* .optionBullet>span:last-child {
+  padding-left:0;
+}
+.optionBullet>span:last-child::before {
+  display:none;
+} */

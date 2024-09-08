@@ -170,6 +170,14 @@ export default function PaymentsAction (
   let taxSum = - tax01Value + tax02Value + tax03Value + taxOptions.tax04 + numCardTax + taxOptions.tax06
   let totalSum = price + sidoTax + taxSum + taxOptions.insuranceTax
 
+  // 결제이벤트 전 필수 조건 분기 처리
+  const checkValidateOption = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (detailAddr === "") {
+      alert("배송지가 지정되지 않았습니다")
+    } else {
+      payClick(e)
+    }
+  }
 
   // 결제이벤트 연결
   const payClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -404,8 +412,8 @@ export default function PaymentsAction (
               <td className="text-right">
                 <span className="w-[50px] mr-[10px]">{type === "add" ? "" : "(기본)"}</span>
                 <span className="optionsPrice">
-                  {type === "add" ? 0 : option?.[0].price.toLocaleString()}
-                </span>원
+                  {type === "add" ? "-" : option?.[0].price.toLocaleString() + "원"}
+                </span>
               </td>
             </>
           ) 
@@ -682,9 +690,15 @@ export default function PaymentsAction (
                       <OptionResultView type="garnish" option={optionGarnish}/>
                       <OptionResultView type="wheel" option={optionWheel}/>
                       <OptionResultView type="drivetrain" option={optionDrivetrain}/>
-                      {detailAddr === "" ? "" : <div className="mt-[10px]">{detailAddr}</div>}
                     </li>
                   </ul>
+                </section>
+
+                <section className="border-b-[1px] border-[#a4a4a4] w-full py-[10px]">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-Hyundai-sans font-light text-[20px]">차량배송지</h3>
+                    {detailAddr === "" ? <div className="text-gray-400">(배송지 미지정)</div> : <div>{detailAddr}</div>}
+                  </div>
                 </section>
 
                 <section className="border-b-[1px] border-[#a4a4a4] w-full py-[20px]">
@@ -742,7 +756,9 @@ export default function PaymentsAction (
                   <button className="px-[20px] w-full">뒤로가기</button>
                   <button 
                     className="bg-white text-black px-[20px] py-[15px] col-start-1 row-start-2 col-span-2" 
-                    onClick={(e) => payClick(e)}>결제하기
+                    // onClick={(e) => payClick(e)}>결제하기
+                    onClick={(e) => checkValidateOption(e)}>결제하기
+                    
                   </button>
                 </section>
               </div>

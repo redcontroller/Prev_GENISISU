@@ -9,19 +9,55 @@ import PortOne from "@portone/browser-sdk/v2";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+
+// 세금값 옵션 테이블
+const taxOptions : TaxOptions = {
+  tax04:3000,
+  tax06:50000,
+  insuranceTax:1900,
+  seoulNumcardCharge:18000,
+  regionNumcardCharge:15700,
+  defaultNumcard:"주소를 먼저 검색해주세요",
+  shippingTaxGroupCapital:385000,
+  shippingTaxGroupJeju:530000,
+  shippingTaxGroupOther:277000,
+  regionTax:{
+    "서울": 353000,
+    "인천": 389000,
+    "경기": 415000,
+    "강원특별자치도": 393000,
+    "세종특별자치시": 300000,
+    "충남": 319000,
+    "대전": 278000,
+    "충북": 351000,
+    "대구": 176000,
+    "경북": 176000,
+    "부산": 275000,
+    "경남": 336000,
+    "울산": 262000,
+    "전북특별자치도": 380000,
+    "전남": 409000,
+    "광주": 326000,
+    "제주특별자치도": 530000
+  }
+}
+
+
 
 export default function PaymentsAction (
-
   {vehicleInfo, optionData, exteriorData}: PaymentsActionProps) {
-
   const [storedValue, setValue] = useLocalStorage<Cart>('cart', {
     model:'',
     price:0,
   })
 
+  const route = useRouter();
+  const SERVER = process.env.NEXT_PUBLIC_API_SERVER;
+  const STOREID = process.env.NEXT_PUBLIC_PORTONE_STOREID;
+  const CHANNELKEY = process.env.NEXT_PUBLIC_PORTONE_CHANNELKEY;
 
-  // 선택안했을때 기본 옵션 저장 (각 옵션값의 첫번째)
+  // 선택안했을때 기본 옵션 저장 (각 옵션값의 첫번째) ---
   const optionExterior = exteriorData.extra.option.exterior[`${storedValue.model}`] // 외장 컬러
   const optionInterior = optionData[3].interior[`${storedValue.model}`] // 내장 컬러
 
@@ -31,107 +67,66 @@ export default function PaymentsAction (
   const optionGarnish = optionData[4].garnish[`${storedValue.model}`] // 내장 가니쉬
   const optionWheel = optionData[5].wheel[`${storedValue.model}`] // 휠 & 타이어
   const optionAdd = optionData[6].add[`${storedValue.model}`] // 선택 옵션
+  // --- 기본옵션 끝
 
   const title = storedValue.model && storedValue.model?.split('-').join(' ').toUpperCase();
   const price = Number(storedValue.price);
-  const SERVER = process.env.NEXT_PUBLIC_API_SERVER;
-  const STOREID = process.env.NEXT_PUBLIC_PORTONE_STOREID;
-  const CHANNELKEY = process.env.NEXT_PUBLIC_PORTONE_CHANNELKEY;
   const originMatch = vehicleInfo.filter(item => item.name === storedValue.model)[0]
-
-  const route = useRouter();
-  const tbodyRef = useRef<HTMLTableSectionElement>(null)
-  const texRef = useRef<HTMLTableSectionElement>(null)
-  const tbodyLengthRef = useRef(0)
-  const sumRef = useRef(null)
-
-  const [selValue, setSelValue] = useState("normal");
-  const [tax01Value, setTax01Value] = useState(1000000)
-  const [tax02Value, setTax02Value] = useState(0)
-  const [tax03Value, setTax03Value] = useState(0)
-  const [isAble, setIsAble] = useState(false)
-  const [detailAddr, setDetailAddr] = useState("")
-  const [numCardTax, setNumCardTax] = useState(0)
-  // const [sigungu,setSigungu] = useState("")
-  const [sidoTax,setSidoTax] = useState(0)
   const [optionPrice, setOptionPrice] = useState(0)
+  const [tax,setTax] = useState({
+    selValue: "normal", // 등록비용 - 장애여부 
+    tax01Value: 0, // 등록비용 - 면세
+    tax02Value: 0, // 등록비용 - 취득세
+    tax03Value: 0, // 등록비용 - 공채
+    isAble: false, // 등록비용의 장애여부에 따라서 변하게하는 boolean
+  })
+  const [addrTax, setAddrTax] = useState({
+    detailAddr: "", // 배송지 확인
+    numCardTax: 0, // 번호판 세금 여부
+    sidoTax: 0, // 배송지에 따라 배송비 여부 결정
+  })
 
+  // 전체 옵션값 합계
+  let taxSum = - tax.tax01Value + tax.tax02Value + tax.tax03Value + taxOptions.tax04 + addrTax.numCardTax + taxOptions.tax06
+  let totalSum = price + addrTax.sidoTax + taxSum + taxOptions.insuranceTax
 
-  // 전체 옵션갯수 반영 및 초기 랜더링
+  // 옵션값 초기 랜더링
   useEffect(()=>{
-    if (tbodyRef.current) {
-      tbodyLengthRef.current = tbodyRef.current.querySelectorAll('tr').length -1;
-      setOptionPrice(price-originMatch.price)
-    }
+    setOptionPrice(price-originMatch.price)
   },[])
 
-  // 세금 반영
-  const taxOptions : TaxOptions = {
-    tax04:3000,
-    tax06:50000,
-    insuranceTax:1900,
-    seoulNumcardCharge:18000,
-    regionNumcardCharge:15700,
-    defaultNumcard:"주소를 먼저 검색해주세요",
-    shippingTaxGroupCapital:385000,
-    shippingTaxGroupJeju:530000,
-    shippingTaxGroupOther:277000,
-    regionTax:{
-      "서울": 353000,
-      "인천": 389000,
-      "경기": 415000,
-      "강원특별자치도": 393000,
-      "세종특별자치시": 300000,
-      "충남": 319000,
-      "대전": 278000,
-      "충북": 351000,
-      "대구": 176000,
-      "경북": 176000,
-      "부산": 275000,
-      "경남": 336000,
-      "울산": 262000,
-      "전북특별자치도": 380000,
-      "전남": 409000,
-      "광주": 326000,
-      "제주특별자치도": 530000
-    }
-  }
-
+  // 장애여부 확인 onChange Event
+  const handleValueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const {value} = e.currentTarget;
+    setTax(prev => {return {...prev,selValue: value}})}
+  
   // 장애여부 세금 부과
   useEffect(()=>{
-    if (texRef.current) {
-      switch (selValue) {
-        case "normal":
-          setTax01Value(1000000)
-          setTax02Value(price * 0.07)
-          setTax03Value(price * 0.025)
-          setIsAble(false)
-          break;
-        case "disabled":
-          setTax01Value(0)
-          setTax02Value(0)
-          setTax03Value(0)
-          setIsAble(true)
-          break;
-        default:
-          setTax01Value(1000000)
-          setTax02Value(price * 0.07)
-          setTax03Value(price * 0.025)
-          setIsAble(false)
-          break;
-      }
+    switch (tax.selValue) {
+      case "normal":
+        setTax(prev => {return {...prev,tax01Value:1000000}})
+        setTax(prev => {return {...prev,tax02Value:price * 0.07,}})
+        setTax(prev => {return {...prev,tax03Value:price * 0.025,}})
+        setTax(prev => {return {...prev,isAble:false,}})
+        break;
+      case "disabled":
+        setTax(prev => {return {...prev,tax01Value:0}})
+        setTax(prev => {return {...prev,tax02Value:0}})
+        setTax(prev => {return {...prev,tax03Value:0}})
+        setTax(prev => {return {...prev,isAble:true}})
+        break;
+      default:
+        setTax(prev => {return {...prev,tax01Value:1000000}})
+        setTax(prev => {return {...prev,tax02Value:price * 0.07,}})
+        setTax(prev => {return {...prev,tax03Value:price * 0.025,}})
+        setTax(prev => {return {...prev,isAble:false,}})
+        break;
     }
-  },[selValue])
-  const handleValueChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelValue(e.currentTarget.value)
-  }
-
-  let taxSum = - tax01Value + tax02Value + tax03Value + taxOptions.tax04 + numCardTax + taxOptions.tax06
-  let totalSum = price + sidoTax + taxSum + taxOptions.insuranceTax
+  },[tax.selValue])
 
   // 결제이벤트 전 필수 조건 분기 처리
   const checkValidateOption = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (detailAddr === "") {
+    if (addrTax.detailAddr === "") {
       alert("배송지가 지정되지 않았습니다")
     } else {
       payClick(e)
@@ -176,7 +171,7 @@ export default function PaymentsAction (
       }
   }
 
-  // 우편주소 다음 api
+  // 우편주소 다음 api 연결 함수
   const handleClickSearchAddr = () => {
     new window.daum.Postcode({
       oncomplete: function(data : AddrType) {
@@ -217,7 +212,8 @@ export default function PaymentsAction (
           const postAddr = document.getElementById("postAddr") as HTMLInputElement;
           if (postAddr) {
             // postAddr.value = addr;
-            setDetailAddr(addr)
+            // setDetailAddr(addr)
+            setAddrTax(prev => {return {...prev,detailAddr:addr}})
           }
 
           const postDetailAddr = document.getElementById("postDetailAddr") as HTMLInputElement;
@@ -226,23 +222,28 @@ export default function PaymentsAction (
           }
 
           // sido (시/도) 구분에 따라 taxOption의 regionTax 값 일치 비교하여 배송비 결정
-          setSidoTax(prev => prev = taxOptions.regionTax[data.sido])
+          // setSidoTax(prev => prev = taxOptions.regionTax[data.sido])
+          setAddrTax(prev => {return{...prev, sidoTax:taxOptions.regionTax[data.sido]}})
 
 
       }
     }).open();
   }
 
-  // 지역 구분에 따른 세금 부과
+  // 우편주소 지역 구분에 따른 세금 부과
   useEffect(()=>{
-    if (detailAddr.split(" ")[0] === "서울") {
-      setNumCardTax(taxOptions.seoulNumcardCharge)
-    } else if (detailAddr === "") {
-      setNumCardTax(0)
+    if (addrTax.detailAddr.split(" ")[0] === "서울") {
+      // setNumCardTax(taxOptions.seoulNumcardCharge)
+      setAddrTax(prev => {return{...prev,numCardTax:taxOptions.seoulNumcardCharge}})
+    } else if (addrTax.detailAddr === "") {
+      // setNumCardTax(0)
+      setAddrTax(prev => {return{...prev,numCardTax:0}})
     }else {
-      setNumCardTax(taxOptions.regionNumcardCharge)
+      // setNumCardTax(taxOptions.regionNumcardCharge)
+      setAddrTax(prev => {return{...prev,numCardTax:taxOptions.regionNumcardCharge}})
+
     }
-  },[detailAddr])
+  },[addrTax.detailAddr])
 
   // 옵션 선택값 로컬스토리지 선택값만 비교 후 컴포넌트 호출
   const OptionResultView = ({ type, option } : {type:string, option:OptionItem[]}) => {
@@ -287,7 +288,6 @@ export default function PaymentsAction (
         }
     }
   }
-
 
   // 옵션 선택값 로컬스토리지와 전체 옵션값 비교 후 컴포넌트 호출
   const OptionView = ({ type, option } : {type:string, option:OptionItem[]}) => {
@@ -438,7 +438,7 @@ export default function PaymentsAction (
                     <th className="text-right">옵션</th>
                     <td>
                       <table className="w-full text-gray-400">
-                        <tbody className="flex flex-col gap-y-[10px]" ref={tbodyRef}>
+                        <tbody className="flex flex-col gap-y-[10px]">
                           <tr className="grid grid-cols-[100px_4fr_minmax(100px,auto)] gap-x-[5px]">
                             <th className="text-left mr-[15px] rounded-[10px] font-normal">엔진 타입</th>
                             <OptionView type="engine" option={optionEngine}/>
@@ -490,7 +490,7 @@ export default function PaymentsAction (
                       <div className="grid grid-cols-2 gap-[10px] auto-rows-[40px] text-white font-normal">
                         <input type="text" id="postCode" placeholder="우편번호" className="bg-transparent border-b-[1px] border-gray-400"/>
                         <Button onClick={handleClickSearchAddr} className="w-[150px] bg-white hover:bg-transparent text-black hover:text-white transition-all justify-self-end">우편번호 찾기</Button>
-                        <input type="text" id="postAddr" placeholder="주소" className="col-span-2 bg-transparent border-b-[1px] border-gray-400" value={detailAddr}/>
+                        <input type="text" id="postAddr" placeholder="주소" className="col-span-2 bg-transparent border-b-[1px] border-gray-400" value={addrTax.detailAddr}/>
                         <input type="text" id="postDetailAddr" placeholder="상세주소" className="bg-transparent border-b-[1px] border-gray-400"/>
                         <input type="text" id="postExtraAddr" placeholder="참고 항목" className="bg-transparent border-b-[1px] border-gray-400"/>
                       </div>
@@ -512,7 +512,7 @@ export default function PaymentsAction (
               <div className="flex gap-x-[10px] justify-end mt-[30px] text-[20px] font-bold">
                 <span>배송비 (b)</span>
                 <span>
-                  {sidoTax === 0 ? "- 원" : (sidoTax.toLocaleString()) + "원"}
+                  {addrTax.sidoTax === 0 ? "- 원" : (addrTax.sidoTax.toLocaleString()) + "원"}
                 </span>
               </div>
             </article>
@@ -529,16 +529,16 @@ export default function PaymentsAction (
               </div>
               
               <table className="mt-[27px] w-full">
-                <tbody ref={texRef}>
+                <tbody>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">면세</th>
                     <td className="flex gap-x-[10px] text-gray-400">
                       <span>
-                        {isAble 
+                        {tax.isAble 
                         ? <span className="mr-[10px] text-gray-400">(면제)</span>
                         : "- "
                         }
-                        {tax01Value.toLocaleString() + "원"}
+                        {tax.tax01Value.toLocaleString() + "원"}
                       </span>
                     </td>
                   </tr>
@@ -546,11 +546,11 @@ export default function PaymentsAction (
                     <th className="text-right">취득세</th>
                     <td className="flex gap-x-[10px] text-gray-400">
                       <span>
-                        {isAble 
+                        {tax.isAble 
                         ? <span className="mr-[10px] text-gray-400">(면제)</span>
                         : ""
                         }
-                        {tax02Value.toLocaleString() + "원"}
+                        {tax.tax02Value.toLocaleString() + "원"}
                       </span>
                     </td>
                   </tr>
@@ -558,11 +558,11 @@ export default function PaymentsAction (
                     <th className="text-right">공채</th>
                     <td className="flex gap-x-[10px] text-gray-400">
                       <span>
-                        {isAble 
+                        {tax.isAble 
                         ? <span className="mr-[10px] text-gray-400">(면제)</span>
                         : ""
                         }
-                        {tax03Value.toLocaleString() + "원"}
+                        {tax.tax03Value.toLocaleString() + "원"}
                       </span>
                     </td>
                   </tr>
@@ -573,7 +573,7 @@ export default function PaymentsAction (
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
                     <th className="text-right">번호 (필름식기준)</th>
                     <td className="flex gap-x-[10px] text-gray-400">
-                      <span>{numCardTax === 0 ? "(배송지 미지정)" : numCardTax.toLocaleString() + "원"}</span>
+                      <span>{addrTax.numCardTax === 0 ? "(배송지 미지정)" : addrTax.numCardTax.toLocaleString() + "원"}</span>
                     </td>
                   </tr>
                   <tr className="flex justify-between gap-x-[140px] mb-[15px] ml-[20px]">
@@ -610,7 +610,7 @@ export default function PaymentsAction (
                   </div>
                   <div className="grid grid-cols-[3fr_1fr] justify-end">
                       <span className="text-right">배송비 (b)</span>
-                      <span className="text-right">{sidoTax === 0 ? "(배송비 미지정)" : (sidoTax.toLocaleString()) + "원"}</span>
+                      <span className="text-right">{addrTax.sidoTax === 0 ? "(배송비 미지정)" : (addrTax.sidoTax.toLocaleString()) + "원"}</span>
                   </div>
                   <div className="grid grid-cols-[3fr_1fr] justify-end">
                       <span className="text-right">등록비용 총합 (c)</span>
@@ -656,7 +656,7 @@ export default function PaymentsAction (
                 <section className="border-b-[1px] border-[#a4a4a4] w-full py-[10px]">
                   <div className="flex justify-between items-center">
                     <h3 className="font-Hyundai-sans font-light text-[20px]">차량배송지</h3>
-                    {detailAddr === "" ? <div className="text-gray-400">(배송지 미지정)</div> : <div>{detailAddr}</div>}
+                    {addrTax.detailAddr === "" ? <div className="text-gray-400">(배송지 미지정)</div> : <div>{addrTax.detailAddr}</div>}
                   </div>
                 </section>
 
@@ -677,7 +677,7 @@ export default function PaymentsAction (
                         </tr>
                         <tr className="flex w-full">
                           <th className="font-light basis-1/4">배송비</th>
-                          <td className="basis-3/4 text-right"><span>{sidoTax === 0 ? "(배송지 미지정)" : (sidoTax.toLocaleString()) + "원"}</span></td>
+                          <td className="basis-3/4 text-right"><span>{addrTax.sidoTax === 0 ? "(배송지 미지정)" : (addrTax.sidoTax.toLocaleString()) + "원"}</span></td>
                         </tr>
                         <tr className="flex w-full">
                           <th className="font-light basis-1/4">등록 비용</th>

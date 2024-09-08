@@ -5,6 +5,7 @@ import { ModelOption } from "@/types/product";
 interface VehicleInfo {
   name:string,
   image:string,
+  price:number,
 }
 
 export default async function Payments () {
@@ -28,6 +29,7 @@ export default async function Payments () {
   const vehicleInfo : VehicleInfo[] = vehicleData.map(item => ({
     name:item.name,
     image:item.mainImages[2].path,
+    price:item.price,
   }))
   // console.log('비휘클 맵 확인:::',vehicleInfo)
   // console.log('확인:::',vehicleData.map((item)=>item.price.toLocaleString()))

@@ -2,52 +2,14 @@
 
 import Button from "@/components/Button";
 import useLocalStorage from "@/hook/useLocalStorage";
-import { Cart, ModelOption, OptionExterior, OptionItem } from "@/types/product";
+import { AddrType } from "@/types/address";
+import { PaymentsActionProps, TaxOptions } from "@/types/payments";
+import { Cart, OptionItem } from "@/types/product";
 import PortOne from "@portone/browser-sdk/v2";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { useEffect, useRef, useState } from "react";
-
-interface PaymentsActionProps {
-  vehicleInfo : {name:string, image:string, price:number,}[],
-  optionData : {[item: string]: ModelOption;}[],
-  exteriorData : OptionExterior;
-}
-
-declare global {
-  interface Window {
-    daum: any;
-  }
-}
-
-interface AddrType {
-  address: string;
-  zonecode: string;
-  userSelectedType:string;
-  roadAddress:string;
-  bname:string;
-  buildingName:string;
-  apartment:string;
-  jibunAddress:string;
-  sigungu?:string;
-  sido:string;
-}
-
-interface TaxOptions {
-  tax04: number;
-  tax06: number;
-  insuranceTax: number;
-  seoulNumcardCharge: number;
-  regionNumcardCharge: number;
-  defaultNumcard: string;
-  shippingTaxGroupCapital: number;
-  shippingTaxGroupJeju: number;
-  shippingTaxGroupOther: number;
-  regionTax: {
-    [key: string]: number;
-  };
-}
 
 export default function PaymentsAction (
 
@@ -70,15 +32,12 @@ export default function PaymentsAction (
   const optionWheel = optionData[5].wheel[`${storedValue.model}`] // 휠 & 타이어
   const optionAdd = optionData[6].add[`${storedValue.model}`] // 선택 옵션
 
-
   const title = storedValue.model && storedValue.model?.split('-').join(' ').toUpperCase();
   const price = Number(storedValue.price);
-  const SERVER : string = process.env.NEXT_PUBLIC_API_SERVER;
-  const STOREID : string = process.env.NEXT_PUBLIC_API_SERVER;
-  const CHANNELKEY : string = process.env.NEXT_PUBLIC_API_SERVER;
+  const SERVER = process.env.NEXT_PUBLIC_API_SERVER;
+  const STOREID = process.env.NEXT_PUBLIC_PORTONE_STOREID;
+  const CHANNELKEY = process.env.NEXT_PUBLIC_PORTONE_CHANNELKEY;
   const originMatch = vehicleInfo.filter(item => item.name === storedValue.model)[0]
-
-  // console.log("외장옵션데이터",exteriorData.extra.option)
 
   const route = useRouter();
   const tbodyRef = useRef<HTMLTableSectionElement>(null)
@@ -184,9 +143,9 @@ export default function PaymentsAction (
     e.preventDefault();
     const response = await PortOne.requestPayment({
       // Store ID 설정
-      storeId: "store-e2dd6932-fc37-43ff-959c-83336c40ca8e",
+      storeId: STOREID,
       // 채널 키 설정
-      channelKey: "channel-key-8bd7c279-b766-4868-af61-4de2abf530c4",
+      channelKey: CHANNELKEY,
       paymentId: `payment-${crypto.randomUUID()}`,
       // --- 여기까지 건드리면 안됌
       orderName: `${title}`,

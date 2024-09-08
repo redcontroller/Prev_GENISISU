@@ -6,5 +6,7 @@ declare namespace NodeJS {
     NEXT_CLIENT_ID: string;
     DB_SERVER: string;
     DB_NAME: string;
+    NEXT_PUBLIC_PORTONE_STOREID: string;
+    NEXT_PUBLIC_PORTONE_CHANNELKEY: string;
   }
 }
